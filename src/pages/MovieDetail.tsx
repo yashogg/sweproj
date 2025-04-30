@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Clock, Calendar, Film, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
@@ -211,7 +210,7 @@ const MovieDetail = () => {
           <div className="md:w-1/3">
             <div className="bg-ticketeer-purple-dark p-1 rounded-md overflow-hidden">
               <img 
-                src={movie.poster || "https://via.placeholder.com/500x750/2D1B4E/FFFFFF?text=No+Poster"} 
+                src={movie.poster} 
                 alt={movie.title} 
                 className="w-full h-auto rounded"
               />
