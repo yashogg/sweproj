@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -36,43 +36,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Edit, Trash2, Plus, Clock, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-// Sample movie data for the management page
-const initialMovies = [
-  { 
-    id: 1, 
-    title: "Spider-Man: No Way Home", 
-    status: "Now Playing",
-    showtimes: [
-      { id: 1, time: "10:30 AM", date: "2025-05-01", price: 12.99 },
-      { id: 2, time: "1:45 PM", date: "2025-05-01", price: 12.99 },
-      { id: 3, time: "5:15 PM", date: "2025-05-01", price: 14.99 },
-      { id: 4, time: "8:30 PM", date: "2025-05-01", price: 14.99 }
-    ]
-  },
-  { 
-    id: 2, 
-    title: "The Batman", 
-    status: "Now Playing",
-    showtimes: [
-      { id: 5, time: "11:00 AM", date: "2025-05-01", price: 12.99 },
-      { id: 6, time: "2:15 PM", date: "2025-05-01", price: 12.99 },
-      { id: 7, time: "5:45 PM", date: "2025-05-01", price: 14.99 },
-      { id: 8, time: "9:00 PM", date: "2025-05-01", price: 14.99 }
-    ]
-  },
-  { 
-    id: 13, 
-    title: "Dune: Part Two", 
-    status: "Upcoming",
-    showtimes: [
-      { id: 9, time: "12:00 PM", date: "2025-06-15", price: 14.99 },
-      { id: 10, time: "3:30 PM", date: "2025-06-15", price: 14.99 },
-      { id: 11, time: "7:00 PM", date: "2025-06-15", price: 16.99 },
-      { id: 12, time: "10:15 PM", date: "2025-06-15", price: 16.99 }
-    ]
-  }
-];
+import { NOW_PLAYING, UPCOMING, deleteMovie } from '@/components/home/MovieData';
 
 interface Showtime {
   id: number;
@@ -89,19 +53,87 @@ interface Movie {
 }
 
 const MovieManagement = () => {
-  const [movies, setMovies] = useState<Movie[]>(initialMovies);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [newShowtime, setNewShowtime] = useState({
     time: "",
     date: "",
     price: 12.99
   });
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Load movies from our data source
+  useEffect(() => {
+    // Convert our movie data to the format expected by this component
+    const convertedMovies = [
+      ...NOW_PLAYING.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        status: "Now Playing",
+        showtimes: [
+          { id: movie.id * 10 + 1, time: "10:30 AM", date: movie.releaseDate, price: 12.99 },
+          { id: movie.id * 10 + 2, time: "1:45 PM", date: movie.releaseDate, price: 12.99 },
+          { id: movie.id * 10 + 3, time: "5:15 PM", date: movie.releaseDate, price: 14.99 },
+        ]
+      })),
+      ...UPCOMING.map(movie => ({
+        id: movie.id,
+        title: movie.title,
+        status: "Upcoming",
+        showtimes: [
+          { id: movie.id * 10 + 1, time: "12:00 PM", date: movie.releaseDate, price: 14.99 },
+          { id: movie.id * 10 + 2, time: "3:30 PM", date: movie.releaseDate, price: 14.99 },
+        ]
+      }))
+    ];
+    
+    setMovies(convertedMovies);
+  }, []);
+
   const handleEditShowtimes = (movie: Movie) => {
     setSelectedMovie(movie);
+  };
+
+  const handleSearch = (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!searchTerm.trim()) {
+      // If search is cleared, reset to show all movies
+      const convertedMovies = [
+        ...NOW_PLAYING.map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          status: "Now Playing",
+          showtimes: [
+            { id: movie.id * 10 + 1, time: "10:30 AM", date: movie.releaseDate, price: 12.99 },
+            { id: movie.id * 10 + 2, time: "1:45 PM", date: movie.releaseDate, price: 12.99 },
+            { id: movie.id * 10 + 3, time: "5:15 PM", date: movie.releaseDate, price: 14.99 },
+          ]
+        })),
+        ...UPCOMING.map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          status: "Upcoming",
+          showtimes: [
+            { id: movie.id * 10 + 1, time: "12:00 PM", date: movie.releaseDate, price: 14.99 },
+            { id: movie.id * 10 + 2, time: "3:30 PM", date: movie.releaseDate, price: 14.99 },
+          ]
+        }))
+      ];
+      setMovies(convertedMovies);
+      return;
+    }
+    
+    // Filter movies based on search term
+    const filteredMovies = movies.filter(movie => 
+      movie.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    setMovies(filteredMovies);
   };
 
   const handleAddShowtime = () => {
@@ -227,13 +259,33 @@ const MovieManagement = () => {
   };
 
   const handleDeleteMovie = (movie: Movie) => {
-    const updatedMovies = movies.filter(m => m.id !== movie.id);
-    setMovies(updatedMovies);
-    
-    toast({
-      title: "Movie Deleted",
-      description: `${movie.title} has been deleted`
-    });
+    try {
+      // Delete the movie from our data source
+      const result = deleteMovie(movie.id);
+      
+      if (result) {
+        // Remove from UI state
+        const updatedMovies = movies.filter(m => m.id !== movie.id);
+        setMovies(updatedMovies);
+        
+        toast({
+          title: "Movie Deleted",
+          description: `${movie.title} has been deleted`
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to delete movie",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting the movie",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -245,11 +297,16 @@ const MovieManagement = () => {
   };
 
   return (
-    <AdminLayout title="Movie Management">
+    <AdminLayout 
+      title="Movie Management" 
+      showActions={true}
+      onSearch={handleSearch}
+      onAdd={() => navigate('/admin/movies/add')}
+    >
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Manage Movies</h1>
-          <Button onClick={() => navigate('/admin/movies/add')}>
+          <Button onClick={() => navigate('/admin/movies/add')} className="bg-ticketeer-yellow hover:bg-yellow-400 text-black">
             <Plus className="w-4 h-4 mr-2" /> Add New Movie
           </Button>
         </div>
@@ -350,7 +407,7 @@ const MovieManagement = () => {
                                     <TableCell>
                                       <Input 
                                         type="number" 
-                                        min="0" 
+                                        min="0.01" 
                                         step="0.01" 
                                         value={showtime.price} 
                                         onChange={(e) => handleUpdateShowtime(

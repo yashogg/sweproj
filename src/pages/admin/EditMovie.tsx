@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { NOW_PLAYING, UPCOMING } from '@/components/home/MovieData';
+import { getMovieById, updateMovie } from '@/components/home/MovieData';
 
 interface MovieDetails {
   id: number;
@@ -23,9 +23,10 @@ interface MovieDetails {
   description: string;
   cast: string;
   posterUrl: string;
+  imagePath: string;
   status: string;
   releaseDate: string;
-  rating?: number;
+  rating: number;
 }
 
 const EditMovie = () => {
@@ -39,6 +40,7 @@ const EditMovie = () => {
     description: '',
     cast: '',
     posterUrl: '',
+    imagePath: '',
     status: '',
     releaseDate: '',
     rating: 0
@@ -47,32 +49,38 @@ const EditMovie = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
   useEffect(() => {
-    // In a real app, this would fetch from an API
-    // For now, we'll just fetch from our sample data
     if (!id) return;
     
     const movieId = parseInt(id);
-    const allMovies = [...NOW_PLAYING, ...UPCOMING];
-    const movie = allMovies.find(m => m.id === movieId);
+    const movie = getMovieById(movieId);
     
     if (movie) {
       setFormData({
         id: movie.id,
         title: movie.title,
-        genre: 'Action/Adventure', // Placeholder as it's not in our sample data
-        description: 'Movie description', // Placeholder
-        cast: 'Actor 1, Actor 2', // Placeholder
+        genre: movie.genre || '',
+        description: movie.description || '',
+        cast: movie.cast || '',
         posterUrl: movie.imagePath,
-        status: NOW_PLAYING.some(m => m.id === movieId) ? 'nowPlaying' : 'upcoming',
-        releaseDate: '2025-05-01', // Placeholder
-        rating: movie.rating
+        imagePath: movie.imagePath,
+        status: movie.releaseDate > new Date().toISOString().split('T')[0] ? 'upcoming' : 'nowPlaying',
+        releaseDate: movie.releaseDate || new Date().toISOString().split('T')[0],
+        rating: movie.rating || 0
       });
       
       setImagePreview(movie.imagePath);
+    } else {
+      // Movie not found
+      toast({
+        title: "Error",
+        description: "Movie not found",
+        variant: "destructive"
+      });
+      navigate('/admin/movies');
     }
     
     setLoading(false);
-  }, [id]);
+  }, [id, navigate, toast]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -102,31 +110,87 @@ const EditMovie = () => {
     setImagePreview(previewUrl);
     
     // In a real app, you would upload this file to a server
-    // For now, just update the form data with a placeholder
-    setFormData({ ...formData, posterUrl: previewUrl });
+    // For now, just update the form data with the preview URL
+    setFormData({ 
+      ...formData, 
+      posterUrl: previewUrl,
+      imagePath: previewUrl  // Update both fields
+    });
+  };
+  
+  const validateForm = () => {
+    // Check required fields
+    if (!formData.title || !formData.description || !formData.status) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Validate rating
+    if (formData.rating < 0 || formData.rating > 10) {
+      toast({
+        title: "Invalid Rating",
+        description: "Rating must be between 0 and 10",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Validate release date
+    if (!formData.releaseDate) {
+      toast({
+        title: "Invalid Date",
+        description: "Please enter a valid release date",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    return true;
   };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate inputs
-    if (!formData.title || !formData.genre || !formData.description) {
+    if (!validateForm()) return;
+    
+    // In a real app, this would save to a database
+    try {
+      const updatedMovie = updateMovie({
+        id: formData.id,
+        title: formData.title,
+        genre: formData.genre,
+        description: formData.description,
+        cast: formData.cast,
+        imagePath: formData.imagePath,
+        rating: Number(formData.rating),
+        releaseDate: formData.releaseDate,
+        status: formData.status
+      });
+      
+      if (updatedMovie) {
+        toast({
+          title: "Success",
+          description: "Movie updated successfully"
+        });
+        navigate('/admin/movies');
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to update movie",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
       toast({
         title: "Error",
-        description: "Please fill in all required fields.",
+        description: "An error occurred while updating the movie",
         variant: "destructive"
       });
-      return;
     }
-    
-    // In a real app, this would save the movie data to a database
-    toast({
-      title: "Success",
-      description: "Movie updated successfully."
-    });
-    
-    // Navigate back to movie management
-    navigate('/admin/movies');
   };
   
   if (loading) {
@@ -148,7 +212,7 @@ const EditMovie = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Movie Title
+                Movie Title<span className="text-red-500">*</span>
               </label>
               <Input
                 id="title"
@@ -162,7 +226,7 @@ const EditMovie = () => {
             
             <div>
               <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-1">
-                Genre
+                Genre<span className="text-red-500">*</span>
               </label>
               <Input
                 id="genre"
@@ -176,7 +240,7 @@ const EditMovie = () => {
             
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description
+                Description<span className="text-red-500">*</span>
               </label>
               <Textarea
                 id="description"
@@ -222,7 +286,7 @@ const EditMovie = () => {
             
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                Status
+                Status<span className="text-red-500">*</span>
               </label>
               <Select 
                 name="status"
@@ -242,7 +306,7 @@ const EditMovie = () => {
             
             <div>
               <label htmlFor="releaseDate" className="block text-sm font-medium text-gray-700 mb-1">
-                Release Date
+                Release Date<span className="text-red-500">*</span>
               </label>
               <Input
                 id="releaseDate"
@@ -251,6 +315,7 @@ const EditMovie = () => {
                 value={formData.releaseDate}
                 onChange={handleChange}
                 className="w-full"
+                required
               />
             </div>
             
@@ -268,6 +333,9 @@ const EditMovie = () => {
                     accept="image/*"
                     onChange={handleFileChange}
                   />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Leave empty to keep the current image
+                  </p>
                 </div>
                 <div>
                   {imagePreview && (
