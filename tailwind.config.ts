@@ -19,6 +19,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Montserrat', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -53,10 +57,10 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Ticketeer custom color palette
+				// Updated Ticketeer color palette to match the image
 				"ticketeer-purple": "#9b87f5",
-				"ticketeer-purple-dark": "#7E69AB", 
-				"ticketeer-purple-darker": "#1A1F2C",
+				"ticketeer-purple-dark": "#2D0A42", 
+				"ticketeer-purple-darker": "#1A0235",
 				"ticketeer-purple-light": "#D6BCFA",
 				"ticketeer-purple-soft": "#E5DEFF",
 				"ticketeer-blue": "#1EAEDB",
@@ -65,6 +69,7 @@ export default {
 				"ticketeer-gray-medium": "#999999",
 				"ticketeer-gray-light": "#cccccc",
 				"ticketeer-red": "#ea384c",
+				"ticketeer-yellow": "#FFD600",
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

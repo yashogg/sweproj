@@ -31,7 +31,7 @@ const Layout = ({ children, requireAuth = false, requireAdmin = false, title }: 
   }
   
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-ticketeer-purple-darker font-montserrat">
       <Navbar />
       <main className="flex-grow">
         {children}
