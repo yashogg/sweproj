@@ -1,302 +1,398 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { useToast } from '@/hooks/use-toast';
-import { CreditCard, Banknote, ArrowRight } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { CreditCard, Calendar, Lock } from 'lucide-react';
 
-// Sample movie data
-const movieDetails = {
-  id: 1,
-  title: 'Spider-Man: No Way Home',
-  date: '2025-05-05',
-  time: '19:30',
-  theater: 'Lubbock - North Ridge',
-  ticketPrice: 12.50,
-  poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man',
-  seats: ['F7', 'F8']
-};
+interface BookingDetails {
+  movieId: string;
+  movieTitle: string;
+  theater: string;
+  showtime: string;
+  date: string;
+  seats: number;
+  ticketPrice: number;
+  totalAmount: string;
+}
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('creditCard');
-  
+  const [paymentMethod, setPaymentMethod] = useState("creditCard");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
   const [formData, setFormData] = useState({
     cardNumber: '',
     cardName: '',
-    expiryDate: '',
+    expiry: '',
     cvv: '',
-    venmoId: '',
-    paypalEmail: ''
+    email: ''
   });
-  
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  useEffect(() => {
+    // Check if user is logged in
+    const storedUser = localStorage.getItem('ticketeer_user');
+    if (!storedUser) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to proceed with checkout",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+
+    // Get booking details from session storage
+    const bookingDetailsStr = sessionStorage.getItem('bookingDetails');
+    if (!bookingDetailsStr) {
+      toast({
+        title: "No Booking Found",
+        description: "Please select a movie and showtime",
+        variant: "destructive"
+      });
+      navigate('/movies/now-playing');
+      return;
+    }
+
+    try {
+      const details = JSON.parse(bookingDetailsStr);
+      setBookingDetails(details);
+    } catch (error) {
+      console.error("Error parsing booking details:", error);
+      toast({
+        title: "Error",
+        description: "Something went wrong with your booking",
+        variant: "destructive"
+      });
+      navigate('/');
+    }
+  }, [navigate, toast]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  
-  const subtotal = movieDetails.ticketPrice * movieDetails.seats.length;
-  const fee = 1.99;
-  const total = subtotal + fee;
-  
-  const handleSubmit = async (e: React.FormEvent) => {
+
+  const handlePaymentMethodChange = (value: string) => {
+    setPaymentMethod(value);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simple validation based on payment method
-    if (paymentMethod === 'creditCard') {
-      if (!formData.cardNumber || !formData.cardName || !formData.expiryDate || !formData.cvv) {
-        toast({
-          title: "Missing information",
-          description: "Please fill in all credit card fields.",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else if (paymentMethod === 'venmo') {
-      if (!formData.venmoId) {
-        toast({
-          title: "Missing information",
-          description: "Please enter your Venmo ID.",
-          variant: "destructive"
-        });
-        return;
-      }
-    } else if (paymentMethod === 'paypal') {
-      if (!formData.paypalEmail) {
-        toast({
-          title: "Missing information",
-          description: "Please enter your PayPal email.",
-          variant: "destructive"
-        });
-        return;
-      }
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      // In a real app, this would process the payment via an API
-      // await processPayment({...formData, method: paymentMethod, total});
-      
-      // Simulate API call
-      setTimeout(() => {
-        toast({
-          title: "Payment successful!",
-          description: "Your tickets have been booked.",
-        });
-        
-        // Redirect to confirmation page
-        navigate(`/ticket/123`);
-      }, 1500);
-    } catch (error) {
+    setIsProcessing(true);
+
+    // Basic validation
+    if (paymentMethod === 'creditCard' && 
+      (!formData.cardNumber || !formData.cardName || !formData.expiry || !formData.cvv)) {
       toast({
-        title: "Payment failed",
-        description: "There was a problem processing your payment. Please try again.",
+        title: "Validation Error",
+        description: "Please fill in all required credit card fields",
         variant: "destructive"
       });
-      setIsLoading(false);
+      setIsProcessing(false);
+      return;
     }
+
+    if ((paymentMethod === 'venmo' || paymentMethod === 'paypal') && !formData.email) {
+      toast({
+        title: "Validation Error",
+        description: "Please provide your email address",
+        variant: "destructive"
+      });
+      setIsProcessing(false);
+      return;
+    }
+
+    // Simulate payment processing
+    setTimeout(() => {
+      setIsProcessing(false);
+      
+      // Generate a simple ticket ID
+      const ticketId = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      // Store ticket details for the confirmation page
+      const ticketDetails = {
+        id: ticketId,
+        movieTitle: bookingDetails?.movieTitle,
+        theater: bookingDetails?.theater,
+        screen: 'Screen ' + Math.floor(1 + Math.random() * 5),
+        date: bookingDetails?.date,
+        time: bookingDetails?.showtime,
+        seats: [...Array(bookingDetails?.seats)].map((_, i) => String.fromCharCode(65 + Math.floor(i/10)) + (i%10 + 1)),
+        amount: bookingDetails?.totalAmount,
+        barcode: 'T' + ticketId + 'R' + Math.floor(1000 + Math.random() * 9000),
+        purchaseDate: new Date().toISOString().split('T')[0]
+      };
+      
+      sessionStorage.setItem('ticketDetails', JSON.stringify(ticketDetails));
+      
+      // Save to order history (in a real app, this would be an API call)
+      const storedUser = JSON.parse(localStorage.getItem('ticketeer_user') || '{}');
+      const orderHistory = JSON.parse(localStorage.getItem(`orderHistory_${storedUser.id}`) || '[]');
+      orderHistory.push({
+        ...ticketDetails,
+        purchaseDate: new Date().toISOString()
+      });
+      localStorage.setItem(`orderHistory_${storedUser.id}`, JSON.stringify(orderHistory));
+      
+      toast({
+        title: "Payment Successful",
+        description: "Your tickets have been confirmed!"
+      });
+      
+      navigate(`/ticket/${ticketId}`);
+    }, 2000);
   };
+
+  if (!bookingDetails) {
+    return (
+      <Layout title="Checkout">
+        <div className="container mx-auto py-12 px-4">
+          <p className="text-center">Loading booking details...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Checkout" requireAuth={true}>
-      <div className="bg-gray-50 py-8">
+      <div className="bg-gray-50 min-h-screen py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-bold mb-8">Checkout</h1>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-                
-                <div className="flex mb-4">
-                  <img 
-                    src={movieDetails.poster} 
-                    alt={movieDetails.title}
-                    className="w-24 h-36 object-cover rounded"
-                  />
-                  <div className="ml-4">
-                    <h3 className="font-bold">{movieDetails.title}</h3>
-                    <p className="text-gray-600 text-sm">{movieDetails.theater}</p>
-                    <p className="text-gray-600 text-sm">
-                      {new Date(movieDetails.date).toLocaleDateString('en-US', { 
-                        weekday: 'short', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })} | {movieDetails.time}
-                    </p>
-                    <p className="text-gray-600 text-sm mt-2">
-                      Seats: {movieDetails.seats.join(', ')}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-4 mt-4">
-                  <div className="flex justify-between mb-2">
-                    <span>Tickets ({movieDetails.seats.length})</span>
-                    <span>${subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span>Convenience Fee</span>
-                    <span>${fee.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between font-bold text-lg mt-4 pt-4 border-t border-gray-200">
-                    <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl font-bold mb-8 text-center">Secure Checkout</h1>
             
-            {/* Payment Form */}
-            <div className="lg:col-span-2">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-xl font-semibold mb-6">Payment Information</h2>
-                
-                <form onSubmit={handleSubmit}>
-                  <div className="mb-6">
-                    <h3 className="font-medium mb-3">Payment Method</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Left Column - Order Summary */}
+              <div className="md:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Order Summary</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h3 className="font-bold text-lg mb-1">{bookingDetails.movieTitle}</h3>
+                      <p className="text-gray-600">
+                        {bookingDetails.theater} Theater
+                      </p>
+                    </div>
                     
-                    <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-3">
-                      <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50 cursor-pointer">
-                        <RadioGroupItem value="creditCard" id="creditCard" />
-                        <Label htmlFor="creditCard" className="flex items-center cursor-pointer">
-                          <CreditCard className="w-5 h-5 mr-2" />
-                          Credit / Debit Card
-                        </Label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50 cursor-pointer">
-                        <RadioGroupItem value="venmo" id="venmo" />
-                        <Label htmlFor="venmo" className="flex items-center cursor-pointer">
-                          <Banknote className="w-5 h-5 mr-2" />
-                          Venmo
-                        </Label>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-gray-50 cursor-pointer">
-                        <RadioGroupItem value="paypal" id="paypal" />
-                        <Label htmlFor="paypal" className="flex items-center cursor-pointer">
-                          <Banknote className="w-5 h-5 mr-2" />
-                          PayPal
-                        </Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Date:</span>
+                      <span className="font-medium">{new Date(bookingDetails.date).toLocaleDateString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric'
+                      })}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Showtime:</span>
+                      <span className="font-medium">{bookingDetails.showtime}</span>
+                    </div>
+                    
+                    <div className="flex justify-between text-sm">
+                      <span>Tickets:</span>
+                      <span className="font-medium">{bookingDetails.seats} x ${bookingDetails.ticketPrice.toFixed(2)}</span>
+                    </div>
+
+                    <Separator />
+                    
+                    <div className="flex justify-between font-bold">
+                      <span>Total:</span>
+                      <span>${bookingDetails.totalAmount}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+              
+              {/* Right Column - Payment Form */}
+              <div className="md:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Lock className="h-5 w-5 mr-2 text-green-600" />
+                      Secure Payment
+                    </CardTitle>
+                    <CardDescription>
+                      All transactions are secure and encrypted
+                    </CardDescription>
+                  </CardHeader>
                   
-                  {/* Credit Card Fields */}
-                  {paymentMethod === 'creditCard' && (
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="cardNumber">Card Number</Label>
-                        <Input
-                          id="cardNumber"
-                          name="cardNumber"
-                          placeholder="1234 5678 9012 3456"
-                          value={formData.cardNumber}
-                          onChange={handleChange}
-                        />
+                  <CardContent>
+                    <form onSubmit={handleSubmit}>
+                      {/* Payment Method Selection */}
+                      <div className="mb-6">
+                        <Label className="mb-2 block">Payment Method</Label>
+                        <RadioGroup
+                          value={paymentMethod}
+                          onValueChange={handlePaymentMethodChange}
+                          className="gap-4"
+                        >
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="creditCard" id="creditCard" />
+                            <Label htmlFor="creditCard" className="flex items-center">
+                              <CreditCard className="h-4 w-4 mr-2" />
+                              Credit Card
+                            </Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="paypal" id="paypal" />
+                            <Label htmlFor="paypal">PayPal</Label>
+                          </div>
+                          
+                          <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="venmo" id="venmo" />
+                            <Label htmlFor="venmo">Venmo</Label>
+                          </div>
+                        </RadioGroup>
                       </div>
                       
-                      <div>
-                        <Label htmlFor="cardName">Name on Card</Label>
-                        <Input
-                          id="cardName"
-                          name="cardName"
-                          placeholder="John Doe"
-                          value={formData.cardName}
-                          onChange={handleChange}
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="expiryDate">Expiry Date</Label>
-                          <Input
-                            id="expiryDate"
-                            name="expiryDate"
-                            placeholder="MM/YY"
-                            value={formData.expiryDate}
-                            onChange={handleChange}
-                          />
+                      {/* Credit Card Fields */}
+                      {paymentMethod === 'creditCard' && (
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="cardNumber">Card Number</Label>
+                            <Input
+                              id="cardNumber"
+                              name="cardNumber"
+                              placeholder="1234 5678 9012 3456"
+                              value={formData.cardNumber}
+                              onChange={handleInputChange}
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="cardName">Cardholder Name</Label>
+                            <Input
+                              id="cardName"
+                              name="cardName"
+                              placeholder="John Smith"
+                              value={formData.cardName}
+                              onChange={handleInputChange}
+                              className="mt-1"
+                              required
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="expiry">Expiration Date</Label>
+                              <Input
+                                id="expiry"
+                                name="expiry"
+                                placeholder="MM/YY"
+                                value={formData.expiry}
+                                onChange={handleInputChange}
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor="cvv">CVV</Label>
+                              <Input
+                                id="cvv"
+                                name="cvv"
+                                placeholder="123"
+                                value={formData.cvv}
+                                onChange={handleInputChange}
+                                className="mt-1"
+                                required
+                              />
+                            </div>
+                          </div>
                         </div>
+                      )}
+                      
+                      {/* PayPal / Venmo Fields */}
+                      {(paymentMethod === 'paypal' || paymentMethod === 'venmo') && (
                         <div>
-                          <Label htmlFor="cvv">CVV</Label>
+                          <Label htmlFor="email">Email Address</Label>
                           <Input
-                            id="cvv"
-                            name="cvv"
-                            type="password"
-                            placeholder="123"
-                            value={formData.cvv}
-                            onChange={handleChange}
+                            id="email"
+                            name="email"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className="mt-1"
+                            required
                           />
+                          <p className="text-sm text-gray-500 mt-2">
+                            You'll be redirected to {paymentMethod === 'paypal' ? 'PayPal' : 'Venmo'} to complete your payment.
+                          </p>
                         </div>
-                      </div>
-                    </div>
-                  )}
+                      )}
+
+                      {/* Security Info */}
+                      <Accordion type="single" collapsible className="mt-6">
+                        <AccordionItem value="security">
+                          <AccordionTrigger>Security Information</AccordionTrigger>
+                          <AccordionContent>
+                            <p className="text-sm text-gray-600">
+                              Your payment information is encrypted and securely transmitted. We do not store your full credit card details and use industry-standard security protocols.
+                            </p>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </form>
+                  </CardContent>
                   
-                  {/* Venmo Fields */}
-                  {paymentMethod === 'venmo' && (
-                    <div>
-                      <Label htmlFor="venmoId">Venmo ID</Label>
-                      <Input
-                        id="venmoId"
-                        name="venmoId"
-                        placeholder="@your-venmo-id"
-                        value={formData.venmoId}
-                        onChange={handleChange}
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        You'll receive a payment request from Ticketeer.
-                      </p>
-                    </div>
-                  )}
-                  
-                  {/* PayPal Fields */}
-                  {paymentMethod === 'paypal' && (
-                    <div>
-                      <Label htmlFor="paypalEmail">PayPal Email</Label>
-                      <Input
-                        id="paypalEmail"
-                        name="paypalEmail"
-                        type="email"
-                        placeholder="your-email@example.com"
-                        value={formData.paypalEmail}
-                        onChange={handleChange}
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        You'll be redirected to PayPal to complete your payment.
-                      </p>
-                    </div>
-                  )}
-                  
-                  <Button
-                    type="submit"
-                    className="mt-6 w-full bg-ticketeer-purple hover:bg-ticketeer-purple-dark"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Processing...
-                      </span>
-                    ) : (
-                      <span className="flex items-center justify-center">
-                        Pay ${total.toFixed(2)} <ArrowRight className="ml-2 h-5 w-5" />
-                      </span>
-                    )}
-                  </Button>
-                </form>
+                  <CardFooter className="flex justify-between">
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/movies/' + bookingDetails.movieId)}
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      onClick={handleSubmit}
+                      disabled={isProcessing}
+                      className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark"
+                    >
+                      {isProcessing ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </span>
+                      ) : (
+                        `Pay $${bookingDetails.totalAmount}`
+                      )}
+                    </Button>
+                  </CardFooter>
+                </Card>
               </div>
             </div>
           </div>

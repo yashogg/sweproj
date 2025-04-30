@@ -1,35 +1,75 @@
 
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, MapPin, Download, Share2, ArrowLeft, ArrowRight } from 'lucide-react';
 
-// Sample ticket data
-const sampleTicket = {
+interface TicketDetails {
+  id: string;
+  movieTitle: string;
+  theater: string;
+  screen: string;
+  date: string;
+  time: string;
+  seats: string[];
+  amount: string;
+  barcode: string;
+  purchaseDate: string;
+  poster?: string;
+}
+
+// Default ticket data as fallback
+const defaultTicket: TicketDetails = {
   id: '123',
-  movieTitle: 'Spider-Man: No Way Home',
-  theater: 'Lubbock - North Ridge',
-  screen: 'Screen 3',
+  movieTitle: 'Movie Title',
+  theater: 'Theater Name',
+  screen: 'Screen 1',
   date: '2025-05-05',
   time: '19:30',
-  seats: ['F7', 'F8'],
-  amount: 26.99,
+  seats: ['A1', 'A2'],
+  amount: '25.98',
   barcode: 'T1CK33TR0CK5',
   purchaseDate: '2025-04-30',
-  poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man'
+  poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Movie+Poster'
 };
 
 const TicketConfirmation = () => {
   const { id } = useParams<{id: string}>();
-  const [ticket, setTicket] = useState(sampleTicket);
+  const navigate = useNavigate();
+  const [ticket, setTicket] = useState<TicketDetails>(defaultTicket);
   
-  // In a real app, you would fetch the ticket data
   useEffect(() => {
-    // fetchTicket(id).then(data => setTicket(data));
-    console.log(`Fetching ticket with ID: ${id}`);
-  }, [id]);
+    // Check if user is logged in
+    const storedUser = localStorage.getItem('ticketeer_user');
+    if (!storedUser) {
+      navigate('/login');
+      return;
+    }
+
+    // Get ticket details from session storage
+    const ticketDetailsStr = sessionStorage.getItem('ticketDetails');
+    if (ticketDetailsStr) {
+      try {
+        const details = JSON.parse(ticketDetailsStr);
+        setTicket(details);
+      } catch (error) {
+        console.error("Error parsing ticket details:", error);
+      }
+    } else {
+      // If no ticket in session storage, try to find it in order history
+      const storedUser = JSON.parse(localStorage.getItem('ticketeer_user') || '{}');
+      const orderHistory = JSON.parse(localStorage.getItem(`orderHistory_${storedUser.id}`) || '[]');
+      const foundTicket = orderHistory.find((t: TicketDetails) => t.id === id);
+      
+      if (foundTicket) {
+        setTicket(foundTicket);
+      } else {
+        console.log(`No ticket found with ID: ${id}`);
+      }
+    }
+  }, [id, navigate]);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -39,6 +79,11 @@ const TicketConfirmation = () => {
       day: 'numeric',
       year: 'numeric'
     });
+  };
+
+  // Function to print the ticket
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
@@ -63,7 +108,7 @@ const TicketConfirmation = () => {
               {/* Left Column - Movie Info */}
               <div className="md:col-span-1">
                 <img 
-                  src={ticket.poster} 
+                  src={ticket.poster || "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=" + encodeURIComponent(ticket.movieTitle)} 
                   alt={ticket.movieTitle} 
                   className="w-full rounded-md shadow"
                 />
@@ -92,7 +137,7 @@ const TicketConfirmation = () => {
                     </div>
                     <div className="text-right">
                       <h4 className="font-semibold">Total Amount</h4>
-                      <p className="text-2xl font-bold mt-1">${ticket.amount.toFixed(2)}</p>
+                      <p className="text-2xl font-bold mt-1">${ticket.amount}</p>
                     </div>
                   </div>
                   
@@ -141,9 +186,9 @@ const TicketConfirmation = () => {
                 
                 {/* Action Buttons */}
                 <div className="flex justify-between mt-6">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={handlePrint}>
                     <Download className="w-4 h-4 mr-2" />
-                    Download
+                    Print Ticket
                   </Button>
                   <Button variant="outline" size="sm">
                     <Share2 className="w-4 h-4 mr-2" />

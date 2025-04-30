@@ -1,221 +1,382 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose
+} from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
-import { Edit, Trash, Eye } from 'lucide-react';
+import { Label } from '@/components/ui/label';
+import { Edit, Trash2, Plus, Clock, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Sample movie data
+// Sample movie data for the management page
 const initialMovies = [
   { 
     id: 1, 
-    title: "Spider-Man", 
-    status: "Currently Showing",
-    releaseDate: "April 1, 2025",
-    showtimes: ["10:00 am", "12:00 pm", "2:00 pm", "4:00 pm", "7:00 pm"],
-    image: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man"
+    title: "Spider-Man: No Way Home", 
+    status: "Now Playing",
+    showtimes: [
+      { id: 1, time: "10:30 AM", date: "2025-05-01", price: 12.99 },
+      { id: 2, time: "1:45 PM", date: "2025-05-01", price: 12.99 },
+      { id: 3, time: "5:15 PM", date: "2025-05-01", price: 14.99 },
+      { id: 4, time: "8:30 PM", date: "2025-05-01", price: 14.99 }
+    ]
   },
   { 
     id: 2, 
     title: "The Batman", 
-    status: "Upcoming",
-    releaseDate: "May 15, 2025",
-    showtimes: ["11:00 am", "1:30 pm", "4:30 pm", "7:30 pm", "10:00 pm"],
-    image: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Batman"
+    status: "Now Playing",
+    showtimes: [
+      { id: 5, time: "11:00 AM", date: "2025-05-01", price: 12.99 },
+      { id: 6, time: "2:15 PM", date: "2025-05-01", price: 12.99 },
+      { id: 7, time: "5:45 PM", date: "2025-05-01", price: 14.99 },
+      { id: 8, time: "9:00 PM", date: "2025-05-01", price: 14.99 }
+    ]
   },
   { 
-    id: 3, 
-    title: "Doctor Strange", 
-    status: "Currently Showing",
-    releaseDate: "March 20, 2025",
-    showtimes: ["9:30 am", "12:15 pm", "3:00 pm", "5:45 pm", "8:30 pm"],
-    image: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Dr+Strange"
+    id: 13, 
+    title: "Dune: Part Two", 
+    status: "Upcoming",
+    showtimes: [
+      { id: 9, time: "12:00 PM", date: "2025-06-15", price: 14.99 },
+      { id: 10, time: "3:30 PM", date: "2025-06-15", price: 14.99 },
+      { id: 11, time: "7:00 PM", date: "2025-06-15", price: 16.99 },
+      { id: 12, time: "10:15 PM", date: "2025-06-15", price: 16.99 }
+    ]
   }
 ];
 
+interface Showtime {
+  id: number;
+  time: string;
+  date: string;
+  price: number;
+}
+
+interface Movie {
+  id: number;
+  title: string;
+  status: string;
+  showtimes: Showtime[];
+}
+
 const MovieManagement = () => {
-  const [movies, setMovies] = useState(initialMovies);
-  const [selectedMovie, setSelectedMovie] = useState(initialMovies[0]);
+  const [movies, setMovies] = useState<Movie[]>(initialMovies);
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [newShowtime, setNewShowtime] = useState({
+    time: "",
+    date: "",
+    price: 12.99
+  });
   const navigate = useNavigate();
   const { toast } = useToast();
-  
-  const handleSearch = (query: string) => {
-    if (!query) {
-      setMovies(initialMovies);
-      return;
-    }
-    
-    const filtered = initialMovies.filter(movie => 
-      movie.title.toLowerCase().includes(query.toLowerCase())
-    );
-    setMovies(filtered);
-    toast({
-      title: "Search Results",
-      description: `Found ${filtered.length} movies matching "${query}"`
-    });
-  };
-  
-  const handleAdd = () => {
-    navigate('/admin/movies/add');
-  };
-  
-  const handleEdit = (id: number) => {
-    toast({
-      title: "Edit Movie",
-      description: `Editing movie with ID: ${id}`
-    });
-  };
-  
-  const handleDelete = (id: number) => {
-    toast({
-      title: "Delete Movie",
-      description: `Removing movie with ID: ${id}`
-    });
-  };
-  
-  const handleView = (id: number) => {
-    toast({
-      title: "View Movie",
-      description: `Viewing movie with ID: ${id}`
-    });
-  };
-  
-  const handleMovieSelect = (movie: any) => {
+
+  const handleEditShowtimes = (movie: Movie) => {
     setSelectedMovie(movie);
   };
 
+  const handleAddShowtime = () => {
+    if (!selectedMovie || !newShowtime.time || !newShowtime.date) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const updatedMovie = {
+      ...selectedMovie,
+      showtimes: [
+        ...selectedMovie.showtimes,
+        {
+          id: Math.floor(Math.random() * 1000) + 100, // Generate a random ID
+          ...newShowtime
+        }
+      ]
+    };
+
+    setMovies(movies.map(m => m.id === selectedMovie.id ? updatedMovie : m));
+    setSelectedMovie(updatedMovie);
+    setNewShowtime({ time: "", date: "", price: 12.99 });
+
+    toast({
+      title: "Showtime Added",
+      description: `New showtime added for ${selectedMovie.title}`
+    });
+  };
+
+  const handleDeleteShowtime = (movieId: number, showtimeId: number) => {
+    const movie = movies.find(m => m.id === movieId);
+    if (!movie) return;
+
+    const updatedShowtimes = movie.showtimes.filter(s => s.id !== showtimeId);
+    const updatedMovie = { ...movie, showtimes: updatedShowtimes };
+    const updatedMovies = movies.map(m => m.id === movieId ? updatedMovie : m);
+    
+    setMovies(updatedMovies);
+    setSelectedMovie(updatedMovie);
+    
+    toast({
+      title: "Showtime Removed",
+      description: `Showtime removed from ${movie.title}`
+    });
+  };
+
+  const handleUpdateShowtime = (movieId: number, showtimeId: number, field: string, value: string) => {
+    const movie = movies.find(m => m.id === movieId);
+    if (!movie) return;
+
+    const updatedShowtimes = movie.showtimes.map(s => {
+      if (s.id === showtimeId) {
+        if (field === 'price') {
+          return { ...s, [field]: parseFloat(value) };
+        }
+        return { ...s, [field]: value };
+      }
+      return s;
+    });
+
+    const updatedMovie = { ...movie, showtimes: updatedShowtimes };
+    const updatedMovies = movies.map(m => m.id === movieId ? updatedMovie : m);
+    
+    setMovies(updatedMovies);
+    setSelectedMovie(updatedMovie);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
-    <AdminLayout title="Movie Management" showActions={true} onSearch={handleSearch} onAdd={handleAdd}>
-      {selectedMovie ? (
-        <div className="bg-white p-6 rounded-lg shadow">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <img 
-                src={selectedMovie.image} 
-                alt={selectedMovie.title} 
-                className="w-full h-auto object-cover rounded"
-              />
-            </div>
-            
-            <div className="md:col-span-2 space-y-4">
-              <div>
-                <h2 className="text-gray-600 text-sm">Movie Title</h2>
-                <p className="font-medium">{selectedMovie.title}</p>
-              </div>
-              
-              <div>
-                <h2 className="text-gray-600 text-sm">Status</h2>
-                <p className="font-medium">{selectedMovie.status}</p>
-              </div>
-              
-              <div>
-                <h2 className="text-gray-600 text-sm">Release Date</h2>
-                <p className="font-medium">{selectedMovie.releaseDate}</p>
-              </div>
-              
-              <div>
-                <h2 className="text-gray-600 text-sm">Showtime</h2>
-                <p className="font-medium">{selectedMovie.showtimes.join(', ')}</p>
-              </div>
-              
-              <div className="flex space-x-2 pt-4">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleEdit(selectedMovie.id)}
-                >
-                  Edit
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDelete(selectedMovie.id)}
-                >
-                  Delete
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => handleView(selectedMovie.id)}
-                >
-                  View
-                </Button>
-              </div>
-            </div>
-          </div>
+    <AdminLayout title="Movie Management">
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Manage Movies</h1>
+          <Button onClick={() => navigate('/admin/movies/add')}>
+            <Plus className="w-4 h-4 mr-2" /> Add New Movie
+          </Button>
         </div>
-      ) : (
-        <div className="bg-white p-6 rounded-lg shadow text-center">
-          <p>Select a movie to view details</p>
-        </div>
-      )}
-      
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4 text-white">All Movies</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full bg-white rounded-lg">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Movie Title</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">Release Date</th>
-                <th className="px-4 py-3 text-right text-sm font-medium text-gray-600">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movies.map(movie => (
-                <tr 
-                  key={movie.id} 
-                  className={`border-t border-gray-200 hover:bg-gray-50 cursor-pointer ${
-                    selectedMovie && selectedMovie.id === movie.id ? 'bg-gray-100' : ''
-                  }`}
-                  onClick={() => handleMovieSelect(movie)}
-                >
-                  <td className="px-4 py-3 text-sm">{movie.title}</td>
-                  <td className="px-4 py-3 text-sm">{movie.status}</td>
-                  <td className="px-4 py-3 text-sm">{movie.releaseDate}</td>
-                  <td className="px-4 py-3 text-sm text-right">
-                    <Button 
-                      size="icon" 
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(movie.id);
-                      }}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(movie.id);
-                      }}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                    <Button 
-                      size="icon" 
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleView(movie.id);
-                      }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[5%]">ID</TableHead>
+              <TableHead className="w-[40%]">Movie Title</TableHead>
+              <TableHead className="w-[15%]">Status</TableHead>
+              <TableHead className="w-[20%]">Showtimes</TableHead>
+              <TableHead className="w-[20%] text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {movies.map((movie) => (
+              <TableRow key={movie.id}>
+                <TableCell className="font-medium">{movie.id}</TableCell>
+                <TableCell>{movie.title}</TableCell>
+                <TableCell>
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                    movie.status === 'Now Playing' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-blue-100 text-blue-800'
+                  }`}>
+                    {movie.status}
+                  </span>
+                </TableCell>
+                <TableCell>{movie.showtimes.length} showtimes</TableCell>
+                <TableCell className="text-right space-x-2">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleEditShowtimes(movie)}
+                      >
+                        <Clock className="w-4 h-4 mr-1" /> Showtimes
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-3xl">
+                      <DialogHeader>
+                        <DialogTitle>Manage Showtimes for {selectedMovie?.title}</DialogTitle>
+                        <DialogDescription>
+                          Add, edit or remove showtimes for this movie.
+                        </DialogDescription>
+                      </DialogHeader>
+
+                      {selectedMovie && (
+                        <div className="space-y-6">
+                          <div className="border rounded-md">
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Date</TableHead>
+                                  <TableHead>Time</TableHead>
+                                  <TableHead>Price ($)</TableHead>
+                                  <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {selectedMovie.showtimes.map((showtime) => (
+                                  <TableRow key={showtime.id}>
+                                    <TableCell>
+                                      <Input 
+                                        type="date" 
+                                        value={showtime.date} 
+                                        onChange={(e) => handleUpdateShowtime(
+                                          selectedMovie.id, 
+                                          showtime.id, 
+                                          'date', 
+                                          e.target.value
+                                        )}
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input 
+                                        type="time" 
+                                        value={showtime.time.split(' ')[0]} 
+                                        onChange={(e) => {
+                                          const time = e.target.value;
+                                          // Convert 24h to 12h format for display
+                                          const date = new Date(`2000-01-01T${time}`);
+                                          const formattedTime = date.toLocaleTimeString('en-US', {
+                                            hour: 'numeric',
+                                            minute: 'numeric',
+                                            hour12: true
+                                          });
+                                          handleUpdateShowtime(
+                                            selectedMovie.id, 
+                                            showtime.id, 
+                                            'time', 
+                                            formattedTime
+                                          );
+                                        }}
+                                      />
+                                    </TableCell>
+                                    <TableCell>
+                                      <Input 
+                                        type="number" 
+                                        min="0" 
+                                        step="0.01" 
+                                        value={showtime.price} 
+                                        onChange={(e) => handleUpdateShowtime(
+                                          selectedMovie.id, 
+                                          showtime.id, 
+                                          'price', 
+                                          e.target.value
+                                        )}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="text-right">
+                                      <Button 
+                                        variant="destructive" 
+                                        size="sm"
+                                        onClick={() => handleDeleteShowtime(selectedMovie.id, showtime.id)}
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+
+                          <div className="border-t pt-4">
+                            <h3 className="font-medium mb-4">Add New Showtime</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <Label htmlFor="date">Date</Label>
+                                <Input 
+                                  id="date" 
+                                  type="date"
+                                  value={newShowtime.date}
+                                  onChange={(e) => setNewShowtime({...newShowtime, date: e.target.value})}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="time">Time</Label>
+                                <Input 
+                                  id="time" 
+                                  type="time"
+                                  value={newShowtime.time}
+                                  onChange={(e) => {
+                                    const time = e.target.value;
+                                    // Convert 24h to 12h format for display
+                                    const date = new Date(`2000-01-01T${time}`);
+                                    const formattedTime = date.toLocaleTimeString('en-US', {
+                                      hour: 'numeric',
+                                      minute: 'numeric',
+                                      hour12: true
+                                    });
+                                    setNewShowtime({...newShowtime, time: formattedTime});
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="price">Price ($)</Label>
+                                <Input 
+                                  id="price" 
+                                  type="number"
+                                  min="0"
+                                  step="0.01"
+                                  value={newShowtime.price}
+                                  onChange={(e) => setNewShowtime({
+                                    ...newShowtime, 
+                                    price: parseFloat(e.target.value)
+                                  })}
+                                />
+                              </div>
+                            </div>
+                            <Button 
+                              onClick={handleAddShowtime}
+                              className="mt-4"
+                            >
+                              <Plus className="w-4 h-4 mr-2" /> Add Showtime
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button>Done</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  <Button variant="outline" size="sm">
+                    <Edit className="w-4 h-4 mr-1" /> Edit
+                  </Button>
+                  
+                  <Button variant="destructive" size="sm">
+                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </AdminLayout>
   );

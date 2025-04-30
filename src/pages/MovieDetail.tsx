@@ -1,9 +1,19 @@
 
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Clock, Calendar, Film, Star, ThumbsUp, ThumbsDown } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import RatingCircle from '@/components/RatingCircle';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from '@/components/ui/button';
 
 // Sample movie data
 const movieData = {
@@ -30,18 +40,141 @@ const movieData = {
     { id: 1, user: "MovieFan123", rating: 9, comment: "Absolutely loved it! The multiverse concept was executed perfectly.", date: "2021-12-20" },
     { id: 2, user: "ComicBookGuy", rating: 10, comment: "Best Spider-Man movie ever. The callbacks to previous films were amazing.", date: "2021-12-19" },
     { id: 3, user: "CriticEye", rating: 7, comment: "Good, but somewhat predictable. The fan service worked well though.", date: "2021-12-22" }
+  ],
+  // Added showtimes data for implementation
+  showtimes: [
+    { id: 1, time: "10:30 AM", date: "2025-05-01" },
+    { id: 2, time: "1:45 PM", date: "2025-05-01" },
+    { id: 3, time: "5:15 PM", date: "2025-05-01" },
+    { id: 4, time: "8:30 PM", date: "2025-05-01" },
+    { id: 5, time: "10:30 AM", date: "2025-05-02" },
+    { id: 6, time: "1:45 PM", date: "2025-05-02" },
+    { id: 7, time: "5:15 PM", date: "2025-05-02" },
+    { id: 8, time: "8:30 PM", date: "2025-05-02" }
   ]
 };
 
+// Available theaters
+const theaters = [
+  { id: 1, name: "Lubbock" },
+  { id: 2, name: "Amarillo" },
+  { id: 3, name: "Levelland" },
+  { id: 4, name: "Plainview" },
+  { id: 5, name: "Snyder" },
+  { id: 6, name: "Abilene" }
+];
+
 const MovieDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
   const [movie, setMovie] = useState(movieData);
+  const [selectedTheater, setSelectedTheater] = useState("");
+  const [selectedShowtime, setSelectedShowtime] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [seatCount, setSeatCount] = useState(1);
+  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewForm, setReviewForm] = useState({
+    rating: 5,
+    comment: ""
+  });
   
+  // Get unique dates for the select dropdown
+  useEffect(() => {
+    if (movie && movie.showtimes) {
+      const dates = [...new Set(movie.showtimes.map(show => show.date))];
+      setAvailableDates(dates);
+      if (dates.length > 0) setSelectedDate(dates[0]);
+    }
+  }, [movie]);
+
   // Simulate loading movie data
   useEffect(() => {
     // In a real app, you would fetch movie by ID here
     console.log(`Loading movie with ID: ${id}`);
   }, [id]);
+
+  // Handle buying tickets
+  const handleBuyTickets = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to purchase tickets",
+        variant: "destructive"
+      });
+      navigate('/login');
+      return;
+    }
+    
+    if (!selectedTheater || !selectedShowtime || !selectedDate) {
+      toast({
+        title: "Selection Required",
+        description: "Please select theater, date and showtime",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Store booking details in session storage
+    const bookingDetails = {
+      movieId: id,
+      movieTitle: movie.title,
+      theater: selectedTheater,
+      showtime: selectedShowtime,
+      date: selectedDate,
+      seats: seatCount,
+      ticketPrice: 12.99, // Sample price
+      totalAmount: (12.99 * seatCount).toFixed(2)
+    };
+    
+    sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
+    navigate('/checkout');
+  };
+
+  // Handle submitting a review
+  const handleSubmitReview = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to submit a review",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (reviewForm.comment.trim() === '') {
+      toast({
+        title: "Review Required",
+        description: "Please enter a review comment",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real app, this would be an API call to save the review
+    const newReview = {
+      id: Math.floor(Math.random() * 1000),
+      user: "CurrentUser", // In a real app, get this from auth context
+      rating: reviewForm.rating,
+      comment: reviewForm.comment,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    setMovie(prev => ({
+      ...prev,
+      reviews: [...prev.reviews, newReview]
+    }));
+
+    setReviewForm({ rating: 5, comment: "" });
+    setShowReviewForm(false);
+
+    toast({
+      title: "Review Submitted",
+      description: "Thank you for your feedback!"
+    });
+  };
 
   return (
     <Layout title={movie.title}>
@@ -67,12 +200,6 @@ const MovieDetail = () => {
                 <Film className="w-4 h-4 mr-2 text-white" />
                 <span className="text-sm text-white">{movie.genres.join(', ')}</span>
               </div>
-            </div>
-            
-            <div className="flex space-x-4">
-              <button className="px-6 py-3 bg-ticketeer-yellow text-black font-bold rounded hover:brightness-110 transition-all flex items-center">
-                <span>Buy Tickets</span>
-              </button>
             </div>
           </div>
         </div>
@@ -102,6 +229,108 @@ const MovieDetail = () => {
                 <div>
                   <span className="block text-gray-400 text-sm">Studios</span>
                   <span className="text-white">{movie.studios.join(', ')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Ticket Booking Section */}
+            <div className="mt-8 bg-ticketeer-purple-dark p-6 rounded-md">
+              <h3 className="font-bold text-xl mb-4 text-white">Book Tickets</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">Select Theater</label>
+                  <Select
+                    value={selectedTheater}
+                    onValueChange={setSelectedTheater}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Theater" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {theaters.map(theater => (
+                        <SelectItem key={theater.id} value={theater.name}>
+                          {theater.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">Select Date</label>
+                  <Select
+                    value={selectedDate}
+                    onValueChange={setSelectedDate}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Date" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableDates.map(date => {
+                        const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+                        return (
+                          <SelectItem key={date} value={date}>
+                            {formattedDate}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">Select Showtime</label>
+                  <Select
+                    value={selectedShowtime}
+                    onValueChange={setSelectedShowtime}
+                    disabled={!selectedDate}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Showtime" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {movie.showtimes
+                        .filter(show => show.date === selectedDate)
+                        .map(show => (
+                          <SelectItem key={show.id} value={show.time}>
+                            {show.time}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <label className="block text-gray-400 text-sm mb-1">Number of Tickets</label>
+                  <Select
+                    value={seatCount.toString()}
+                    onValueChange={(value) => setSeatCount(parseInt(value))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select Number of Tickets" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[...Array(10)].map((_, i) => (
+                        <SelectItem key={i+1} value={(i+1).toString()}>
+                          {i+1} {i === 0 ? 'ticket' : 'tickets'}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleBuyTickets} 
+                    className="w-full bg-ticketeer-yellow text-black hover:bg-yellow-400"
+                  >
+                    Buy Tickets
+                  </Button>
                 </div>
               </div>
             </div>
@@ -160,7 +389,70 @@ const MovieDetail = () => {
             
             {/* Reviews Section */}
             <div className="bg-ticketeer-purple-dark p-6 rounded-md">
-              <h2 className="text-2xl font-bold mb-6 text-white">Reviews</h2>
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-white">Reviews</h2>
+                {!showReviewForm && (
+                  <Button 
+                    onClick={() => setShowReviewForm(true)}
+                    variant="outline"
+                    className="text-white border-ticketeer-yellow hover:bg-ticketeer-yellow hover:text-black"
+                  >
+                    Write a Review
+                  </Button>
+                )}
+              </div>
+              
+              {showReviewForm && (
+                <div className="border-b border-ticketeer-purple pb-6 mb-6">
+                  <h3 className="font-bold text-white mb-4">Your Review</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-gray-300 mb-2">Rating (1-10)</label>
+                      <Select
+                        value={reviewForm.rating.toString()}
+                        onValueChange={(value) => setReviewForm({...reviewForm, rating: parseInt(value)})}
+                      >
+                        <SelectTrigger className="w-full max-w-[200px]">
+                          <SelectValue placeholder="Select Rating" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[...Array(10)].map((_, i) => (
+                            <SelectItem key={i+1} value={(i+1).toString()}>
+                              {i+1} {i === 0 ? 'star' : 'stars'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-300 mb-2">Your Comments</label>
+                      <textarea 
+                        className="w-full bg-ticketeer-purple p-3 rounded text-white"
+                        rows={4}
+                        value={reviewForm.comment}
+                        onChange={(e) => setReviewForm({...reviewForm, comment: e.target.value})}
+                        placeholder="Share your thoughts about this movie..."
+                      ></textarea>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={handleSubmitReview}
+                        className="bg-ticketeer-yellow text-black hover:bg-yellow-400"
+                      >
+                        Submit Review
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setShowReviewForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="space-y-6">
                 {movie.reviews.map(review => (

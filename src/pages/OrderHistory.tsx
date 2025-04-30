@@ -1,179 +1,159 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import { useAuth } from '@/context/AuthContext';
+import { Calendar, Clock, MapPin, Eye, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Ticket, Calendar, Clock, MapPin, Download, QrCode } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
-// Sample ticket data
-const sampleTickets = [
-  {
-    id: '1001',
-    movieTitle: 'Spider-Man: No Way Home',
-    theater: 'Lubbock - North Ridge',
-    date: '2025-05-05',
-    time: '19:30',
-    seats: ['F7', 'F8'],
-    amount: 24.99,
-    status: 'active',
-    poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man'
-  },
-  {
-    id: '1002',
-    movieTitle: 'The Batman',
-    theater: 'Amarillo - Westgate',
-    date: '2025-05-02',
-    time: '20:45',
-    seats: ['D12', 'D13', 'D14'],
-    amount: 36.50,
-    status: 'active',
-    poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Batman'
-  },
-  {
-    id: '1003',
-    movieTitle: 'Top Gun: Maverick',
-    theater: 'Lubbock - South Point',
-    date: '2025-04-15',
-    time: '18:15',
-    seats: ['H5'],
-    amount: 12.99,
-    status: 'used',
-    poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Top+Gun'
-  }
-];
+interface TicketOrder {
+  id: string;
+  movieTitle: string;
+  theater: string;
+  screen: string;
+  date: string;
+  time: string;
+  seats: string[];
+  amount: string;
+  purchaseDate: string;
+}
 
 const OrderHistory = () => {
-  const [tickets, setTickets] = useState(sampleTickets);
-  const [activeFilter, setActiveFilter] = useState('all');
-  
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [orders, setOrders] = useState<TicketOrder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      // Load order history from localStorage
+      const orderHistory = JSON.parse(localStorage.getItem(`orderHistory_${user.id}`) || '[]');
+      setOrders(orderHistory);
+      setIsLoading(false);
+    }
+  }, [user]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
-  
-  const filteredTickets = activeFilter === 'all' 
-    ? tickets 
-    : tickets.filter(ticket => ticket.status === (activeFilter === 'active' ? 'active' : 'used'));
+
+  const formatShortDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
 
   return (
     <Layout title="Order History" requireAuth={true}>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8">My Tickets</h1>
-        
-        <div className="mb-6">
-          <div className="flex space-x-2">
-            <Button 
-              variant={activeFilter === 'all' ? 'default' : 'outline'}
-              onClick={() => setActiveFilter('all')}
-              className={activeFilter === 'all' ? 'bg-ticketeer-purple hover:bg-ticketeer-purple-dark' : ''}
-            >
-              All Tickets
-            </Button>
-            <Button 
-              variant={activeFilter === 'active' ? 'default' : 'outline'}
-              onClick={() => setActiveFilter('active')}
-              className={activeFilter === 'active' ? 'bg-ticketeer-purple hover:bg-ticketeer-purple-dark' : ''}
-            >
-              Active
-            </Button>
-            <Button 
-              variant={activeFilter === 'used' ? 'default' : 'outline'}
-              onClick={() => setActiveFilter('used')}
-              className={activeFilter === 'used' ? 'bg-ticketeer-purple hover:bg-ticketeer-purple-dark' : ''}
-            >
-              Used
-            </Button>
-          </div>
-        </div>
-        
-        {filteredTickets.length === 0 ? (
-          <div className="text-center py-16">
-            <Ticket className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-            <h2 className="text-2xl font-bold mb-2">No tickets found</h2>
-            <p className="text-gray-600 mb-6">
-              {activeFilter === 'all' 
-                ? "You haven't purchased any tickets yet." 
-                : `You don't have any ${activeFilter} tickets.`}
-            </p>
-            <Link to="/movies/now-playing">
-              <Button className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Your Ticket Orders</h1>
+          
+          {isLoading ? (
+            <p className="text-center py-10">Loading your orders...</p>
+          ) : orders.length === 0 ? (
+            <div className="bg-white p-8 rounded-lg shadow text-center">
+              <h2 className="text-xl font-bold mb-4">No Tickets Found</h2>
+              <p className="text-gray-600 mb-6">
+                You haven't purchased any tickets yet. Explore our movies and book your first ticket!
+              </p>
+              <Button 
+                onClick={() => navigate('/movies/now-playing')}
+                className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark"
+              >
                 Browse Movies
               </Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {filteredTickets.map(ticket => (
-              <div key={ticket.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="flex flex-col md:flex-row">
-                  <div className="w-full md:w-1/4 lg:w-1/6">
-                    <img 
-                      src={ticket.poster} 
-                      alt={ticket.movieTitle} 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-6 flex-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-xl font-bold mb-2">{ticket.movieTitle}</h3>
-                        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                          <div className="flex items-center">
-                            <Calendar className="w-4 h-4 mr-1" />
-                            {formatDate(ticket.date)}
-                          </div>
-                          <div className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {ticket.time}
-                          </div>
-                          <div className="flex items-center">
-                            <MapPin className="w-4 h-4 mr-1" />
-                            {ticket.theater}
-                          </div>
-                        </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {orders
+                .sort((a, b) => new Date(b.purchaseDate).getTime() - new Date(a.purchaseDate).getTime())
+                .map((order) => (
+                  <div key={order.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div className="bg-ticketeer-purple-dark p-4 flex justify-between items-center">
+                      <div className="text-white">
+                        <span className="font-medium">Order ID: {order.id}</span>
+                        <p className="text-sm opacity-80">Purchased on {formatDate(order.purchaseDate)}</p>
                       </div>
-                      <div>
-                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium 
-                          ${ticket.status === 'active' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'}`}
+                      <Link to={`/ticket/${order.id}`}>
+                        <Button 
+                          variant="secondary" 
+                          size="sm"
+                          className="flex items-center"
                         >
-                          {ticket.status === 'active' ? 'Active' : 'Used'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <p className="text-sm">
-                        <span className="font-medium">Seats:</span> {ticket.seats.join(', ')}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Amount paid:</span> ${ticket.amount.toFixed(2)}
-                      </p>
-                    </div>
-                    
-                    <div className="mt-6 flex flex-wrap gap-2">
-                      <Link to={`/ticket/${ticket.id}`}>
-                        <Button size="sm" className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
-                          <QrCode className="w-4 h-4 mr-2" />
+                          <Eye className="w-4 h-4 mr-1" />
                           View Ticket
                         </Button>
                       </Link>
-                      <Button size="sm" variant="outline">
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </Button>
+                    </div>
+                    
+                    <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4">
+                      <div className="w-full md:w-1/4 flex-shrink-0">
+                        <div className="bg-gray-200 rounded-md h-24 md:h-32 flex items-center justify-center text-center p-2">
+                          <div>
+                            <p className="font-bold text-xl">{formatShortDate(order.date)}</p>
+                            <p className="text-sm">{order.time}</p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex-grow">
+                        <h2 className="text-xl font-bold mb-2">{order.movieTitle}</h2>
+                        
+                        <div className="flex flex-col md:flex-row md:justify-between space-y-2 md:space-y-0">
+                          <div className="space-y-1">
+                            <div className="flex items-center text-sm">
+                              <MapPin className="w-4 h-4 mr-1 text-gray-500" />
+                              <span>{order.theater}, {order.screen}</span>
+                            </div>
+                            
+                            <div className="flex items-center text-sm">
+                              <Calendar className="w-4 h-4 mr-1 text-gray-500" />
+                              <span>{formatDate(order.date)}</span>
+                            </div>
+                            
+                            <div className="flex items-center text-sm">
+                              <Clock className="w-4 h-4 mr-1 text-gray-500" />
+                              <span>{order.time}</span>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <div className="text-sm mb-1">
+                              <span className="text-gray-500">Seats:</span> <span className="font-medium">{order.seats.join(', ')}</span>
+                            </div>
+                            <div className="font-bold text-lg">
+                              ${order.amount}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                ))}
+            </div>
+          )}
+          
+          <Separator className="my-8" />
+          
+          <div className="flex justify-between items-center">
+            <Button variant="outline" onClick={() => navigate('/profile')}>Back to Profile</Button>
+            <Link to="/movies/now-playing">
+              <Button className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
+                Browse Movies
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
-        )}
+        </div>
       </div>
     </Layout>
   );
