@@ -8,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
 
 // Sample user data
 const userData = [
@@ -53,38 +51,37 @@ const userData = [
 const UserManagement = () => {
   return (
     <AdminLayout title="User Management">
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-gray-100 p-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">User List Table</h2>
         
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[20%]">Name</TableHead>
-              <TableHead className="w-[25%]">Email Address</TableHead>
-              <TableHead className="w-[15%]">Date Joined</TableHead>
-              <TableHead className="w-[20%]">Total Tickets Bought</TableHead>
-              <TableHead className="w-[20%]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {userData.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.dateJoined}</TableCell>
-                <TableCell>{user.totalTicketsBought}</TableCell>
-                <TableCell>
-                  <Button variant="outline" size="sm" className="mr-2">
-                    <Eye className="h-4 w-4 mr-1" /> View
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    Deactivate
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto bg-white">
+          <table className="min-w-full border-collapse">
+            <thead className="border-b">
+              <tr>
+                <th className="py-3 px-4 text-left font-medium">Name</th>
+                <th className="py-3 px-4 text-left font-medium">Email Address</th>
+                <th className="py-3 px-4 text-left font-medium">Date Joined</th>
+                <th className="py-3 px-4 text-left font-medium">Total Tickets Bought</th>
+                <th className="py-3 px-4 text-left font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {userData.map((user) => (
+                <tr key={user.id} className="border-b">
+                  <td className="py-3 px-4">{user.name}</td>
+                  <td className="py-3 px-4">{user.email}</td>
+                  <td className="py-3 px-4">{user.dateJoined}</td>
+                  <td className="py-3 px-4">{user.totalTicketsBought}</td>
+                  <td className="py-3 px-4">
+                    <button className="text-blue-600 hover:underline mr-3">View</button>
+                    <span className="text-gray-400">/ </span>
+                    <button className="text-red-600 hover:underline ml-1">Deactivate</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </AdminLayout>
   );

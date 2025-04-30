@@ -1,19 +1,8 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from '@/components/ui/button';
-import { Clock, Edit, Trash2 } from 'lucide-react';
-import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Edit, Trash2, Clock } from 'lucide-react';
 
 interface Showtime {
   id: number;
@@ -55,64 +44,66 @@ const MovieTable = ({
     }
   };
 
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[5%]">ID</TableHead>
-          <TableHead className="w-[40%]">Movie Title</TableHead>
-          <TableHead className="w-[15%]">Status</TableHead>
-          <TableHead className="w-[20%]">Showtimes</TableHead>
-          <TableHead className="w-[20%] text-right">Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {movies.map((movie) => (
-          <TableRow key={movie.id}>
-            <TableCell className="font-medium">{movie.id}</TableCell>
-            <TableCell>{movie.title}</TableCell>
-            <TableCell>
-              <Badge variant={movie.status.toLowerCase() === 'now playing' ? 'default' : 'secondary'} className={getStatusColor(movie.status)}>
-                {movie.status}
-              </Badge>
-            </TableCell>
-            <TableCell>{movie.showtimes.length} showtimes</TableCell>
-            <TableCell className="text-right space-x-2">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => onEditShowtimes(movie)}
-                  >
-                    <Clock className="w-4 h-4 mr-1" /> Showtimes
-                  </Button>
-                </DialogTrigger>
-              </Dialog>
+  const formatShowtimes = (showtimes: Showtime[]) => {
+    if (showtimes.length === 0) return 'No showtimes';
+    
+    const times = showtimes.map(st => st.time);
+    return times.join(', ');
+  };
 
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate(`/admin/movies/edit/${movie.id}`)}
-              >
-                <Edit className="w-4 h-4 mr-1" /> Edit
-              </Button>
-              
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
+  return (
+    <div className="overflow-x-auto bg-white">
+      <table className="min-w-full border-collapse">
+        <thead className="border-b">
+          <tr>
+            <th className="py-3 px-4 text-left font-medium">Movie Title</th>
+            <th className="py-3 px-4 text-left font-medium">Status</th>
+            <th className="py-3 px-4 text-left font-medium">Release Date</th>
+            <th className="py-3 px-4 text-left font-medium">Showtime</th>
+            <th className="py-3 px-4 text-left font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {movies.map((movie) => {
+            // Get first showtime's date for display
+            const releaseDate = movie.showtimes.length > 0 ? movie.showtimes[0].date : 'N/A';
+            
+            return (
+              <tr key={movie.id} className="border-b">
+                <td className="py-3 px-4 font-medium">{movie.title}</td>
+                <td className="py-3 px-4">
+                  <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(movie.status)}`}>
+                    {movie.status}
+                  </span>
+                </td>
+                <td className="py-3 px-4">{releaseDate}</td>
+                <td className="py-3 px-4">{formatShowtimes(movie.showtimes)}</td>
+                <td className="py-3 px-4">
+                  <button 
+                    className="text-blue-600 hover:underline mr-2"
+                    onClick={() => navigate(`/admin/movies/edit/${movie.id}`)}
                   >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                  </Button>
-                </AlertDialogTrigger>
-              </AlertDialog>
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+                    Edit
+                  </button>
+                  <button 
+                    className="text-red-600 hover:underline mr-2"
+                    onClick={() => onDeleteConfirm(movie)}
+                  >
+                    Delete
+                  </button>
+                  <button 
+                    className="text-gray-600 hover:underline"
+                    onClick={() => navigate(`/admin/movies/${movie.id}`)}
+                  >
+                    View
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
   );
 };
 

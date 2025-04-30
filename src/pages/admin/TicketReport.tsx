@@ -1,14 +1,5 @@
 
 import AdminLayout from '@/components/layout/AdminLayout';
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 
 // Sample ticket data
 const ticketData = [
@@ -57,39 +48,43 @@ const ticketData = [
 const TicketReport = () => {
   return (
     <AdminLayout title="Ticket Sales Report">
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-gray-100 p-6 rounded-lg">
         <h2 className="text-xl font-semibold mb-4">Tickets Sales Table</h2>
         
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[25%]">Movie Title</TableHead>
-              <TableHead className="w-[15%]">Date</TableHead>
-              <TableHead className="w-[15%]">Showtime</TableHead>
-              <TableHead className="w-[15%]" style={{ textAlign: 'right' }}>Total Sales</TableHead>
-              <TableHead className="w-[20%]" style={{ textAlign: 'right' }}>Total Revenue</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {ticketData.map((ticket) => (
-              <TableRow key={ticket.id}>
-                <TableCell className="font-medium">{ticket.movieTitle}</TableCell>
-                <TableCell>{ticket.date}</TableCell>
-                <TableCell>{ticket.showtime}</TableCell>
-                <TableCell style={{ textAlign: 'right' }}>{ticket.totalSales}</TableCell>
-                <TableCell style={{ textAlign: 'right' }}>${ticket.totalRevenue.toLocaleString()}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-          <TableCaption>
-            <div className="flex justify-end pt-4">
-              <div className="text-right">
-                <div className="font-semibold">Total: ${ticketData.reduce((acc, ticket) => acc + ticket.totalRevenue, 0).toLocaleString()}</div>
-                <div className="text-sm text-gray-500">{ticketData.reduce((acc, ticket) => acc + ticket.totalSales, 0)} tickets sold</div>
-              </div>
-            </div>
-          </TableCaption>
-        </Table>
+        <div className="overflow-x-auto bg-white">
+          <table className="min-w-full border-collapse">
+            <thead className="border-b">
+              <tr>
+                <th className="py-3 px-4 text-left font-medium">Movie Title</th>
+                <th className="py-3 px-4 text-left font-medium">Date</th>
+                <th className="py-3 px-4 text-left font-medium">Showtime</th>
+                <th className="py-3 px-4 text-left font-medium">Total Sales</th>
+                <th className="py-3 px-4 text-left font-medium">Total Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ticketData.map((ticket) => (
+                <tr key={ticket.id} className="border-b">
+                  <td className="py-3 px-4">{ticket.movieTitle}</td>
+                  <td className="py-3 px-4">{ticket.date}</td>
+                  <td className="py-3 px-4">{ticket.showtime}</td>
+                  <td className="py-3 px-4">{ticket.totalSales}</td>
+                  <td className="py-3 px-4">${ticket.totalRevenue.toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={5} className="py-4 px-4 text-right">
+                  <div>
+                    <div className="font-semibold">Total: ${ticketData.reduce((acc, ticket) => acc + ticket.totalRevenue, 0).toLocaleString()}</div>
+                    <div className="text-sm text-gray-500">{ticketData.reduce((acc, ticket) => acc + ticket.totalSales, 0)} tickets sold</div>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </div>
     </AdminLayout>
   );

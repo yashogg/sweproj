@@ -1,17 +1,9 @@
 
 import { useState } from 'react';
 import AdminLayout from '@/components/layout/AdminLayout';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useAuth } from '@/context/AuthContext';
 
 // Sample admin data
@@ -31,7 +23,6 @@ const AdminSettings = () => {
     name: user?.name || '',
     email: user?.email || '',
     password: '',
-    confirmPassword: ''
   });
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,76 +30,25 @@ const AdminSettings = () => {
     setFormData({ ...formData, [name]: value });
   };
   
-  const handleProfileUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate input
-    if (!formData.name || !formData.email) {
-      toast({
-        title: "Error",
-        description: "Name and email are required.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // In a real app, this would update the user profile
+  const handleProfileUpdate = () => {
     toast({
       title: "Success",
       description: "Admin profile updated successfully."
     });
   };
   
-  const handlePasswordUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate password
-    if (!formData.password) {
-      toast({
-        title: "Error",
-        description: "Password is required.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // In a real app, this would update the password
-    toast({
-      title: "Success",
-      description: "Password updated successfully."
-    });
-    
-    // Reset password fields
-    setFormData({
-      ...formData,
-      password: '',
-      confirmPassword: ''
-    });
-  };
-  
   return (
     <AdminLayout title="Admin Settings">
       <div className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-gray-100 p-6 rounded-lg">
           <h2 className="text-xl font-semibold mb-4">Edit Admin Profile</h2>
           
           <div className="space-y-4 max-w-xl">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Update Name
-              </label>
               <Input
                 id="name"
                 name="name"
+                placeholder="Update Name"
                 value={formData.name}
                 onChange={handleChange}
                 className="w-full"
@@ -116,13 +56,11 @@ const AdminSettings = () => {
             </div>
             
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Update Email
-              </label>
               <Input
                 id="email"
                 name="email"
                 type="email"
+                placeholder="Update Email"
                 value={formData.email}
                 onChange={handleChange}
                 className="w-full"
@@ -130,17 +68,14 @@ const AdminSettings = () => {
             </div>
             
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Change Password
-              </label>
               <Input
                 id="password"
                 name="password"
                 type="password"
+                placeholder="Change Password"
                 value={formData.password}
                 onChange={handleChange}
                 className="w-full"
-                placeholder="Enter new password"
               />
             </div>
             
@@ -152,36 +87,35 @@ const AdminSettings = () => {
           </div>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow">
+        <div className="bg-gray-100 p-6 rounded-lg">
           <h2 className="text-xl font-semibold mb-4">Manage Admin</h2>
           
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[25%]">Name</TableHead>
-                <TableHead className="w-[35%]">Email</TableHead>
-                <TableHead className="w-[15%]">Role</TableHead>
-                <TableHead className="w-[25%]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {adminUsers.map((admin) => (
-                <TableRow key={admin.id}>
-                  <TableCell className="font-medium">{admin.name}</TableCell>
-                  <TableCell>{admin.email}</TableCell>
-                  <TableCell>{admin.role}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" className="mr-2">
-                      Edit Role
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Deactivate
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <div className="overflow-x-auto bg-white">
+            <table className="min-w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="py-3 px-4 text-left font-medium">Name</th>
+                  <th className="py-3 px-4 text-left font-medium">Email</th>
+                  <th className="py-3 px-4 text-left font-medium">Role</th>
+                  <th className="py-3 px-4 text-left font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adminUsers.map((admin) => (
+                  <tr key={admin.id} className="border-b">
+                    <td className="py-3 px-4">{admin.name}</td>
+                    <td className="py-3 px-4">{admin.email}</td>
+                    <td className="py-3 px-4">{admin.role}</td>
+                    <td className="py-3 px-4">
+                      <button className="text-blue-600 hover:underline mr-1">Edit Role</button>
+                      <span className="text-gray-400">/ </span>
+                      <button className="text-red-600 hover:underline ml-1">Deactivate</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </AdminLayout>

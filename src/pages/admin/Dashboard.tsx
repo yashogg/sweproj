@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import Layout from '@/components/layout/Layout';
+import AdminLayout from '@/components/layout/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -52,9 +52,9 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Layout title="Admin Dashboard" requireAuth={true} requireAdmin={true}>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+    <AdminLayout title="Admin Dashboard">
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
         
         <Tabs defaultValue={timeRange} onValueChange={setTimeRange} className="mb-6">
           <div className="flex justify-between items-center mb-4">
@@ -259,7 +259,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
-    </Layout>
+    </AdminLayout>
   );
 };
 

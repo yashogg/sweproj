@@ -53,10 +53,10 @@ const AdminLayout = ({
   ];
 
   return (
-    <div className="flex min-h-screen bg-ticketeer-purple-darker">
+    <div className="flex min-h-screen">
       {/* Sidebar */}
-      <div className="w-64 bg-ticketeer-purple-darker border-r border-ticketeer-purple-dark">
-        <div className="p-4 border-b border-ticketeer-purple-dark">
+      <div className="w-64 bg-ticketeer-purple-darker">
+        <div className="p-4">
           <Link to="/admin" className="flex flex-col items-center text-white">
             <h1 className="text-2xl font-bold">Ticketeer</h1>
             <p className="text-xs text-gray-400">movie booking</p>
@@ -73,17 +73,18 @@ const AdminLayout = ({
           </div>
         </div>
         
-        <nav className="mt-4">
+        <nav className="mt-6">
           <ul className="space-y-2">
             {menuItems.map((item) => {
-              const isActive = location.pathname === item.path;
+              const isActive = location.pathname === item.path || 
+                (item.path !== '/admin' && location.pathname.startsWith(item.path));
               return (
                 <li key={item.path}>
                   <Link
                     to={item.path}
                     className={`flex items-center px-4 py-3 text-sm ${
                       isActive 
-                        ? "bg-ticketeer-purple text-white" 
+                        ? "bg-white text-ticketeer-purple-darker" 
                         : "text-gray-300 hover:bg-ticketeer-purple-dark"
                     }`}
                   >
@@ -99,7 +100,7 @@ const AdminLayout = ({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 bg-white">
           {/* Header Actions */}
           {showActions && (
             <div className="flex justify-between mb-6">
@@ -133,7 +134,7 @@ const AdminLayout = ({
         </main>
         
         {/* Footer */}
-        <footer className="border-t border-ticketeer-purple-dark py-4">
+        <footer className="bg-ticketeer-purple-darker py-4">
           <div className="container mx-auto px-6">
             {/* Empty footer for now */}
           </div>
