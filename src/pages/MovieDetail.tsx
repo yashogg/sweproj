@@ -21,7 +21,7 @@ const movieData = {
   tagline: "The Multiverse unleashed.",
   description: "Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man.",
   poster: "/lovable-uploads/06cfccd8-26cd-4e91-8045-d77d80b03755.png",
-  backdrop: "https://via.placeholder.com/1920x1080/2D1B4E/FFFFFF?text=Spider-Man+Background",
+  backdrop: "",
   releaseDate: "December 17, 2021",
   duration: "2h 28m",
   genres: ["Action", "Adventure", "Science Fiction"],
@@ -178,9 +178,7 @@ const MovieDetail = () => {
   return (
     <Layout title={movie.title}>
       {/* Hero Banner */}
-      <section className="relative h-[70vh] bg-cover bg-center" style={{ 
-        backgroundImage: `linear-gradient(to top, #1A0B2E, transparent), url(${movie.backdrop})` 
-      }}>
+      <section className="relative h-[70vh] bg-ticketeer-purple">
         <div className="container mx-auto h-full flex items-end pb-16 px-5">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold mb-2 text-white">{movie.title}</h1>
