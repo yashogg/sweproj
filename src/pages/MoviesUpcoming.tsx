@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import Layout from '@/components/layout/Layout';
-import MovieCard from '@/components/MovieCard';
+import MovieCardWithStatus from '@/components/MovieCardWithStatus';
 
 // Sample movie data - upcoming movies
 const upcomingMovies = [
@@ -36,12 +36,13 @@ const MoviesUpcoming = () => {
         {/* Movies Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
           {movies.map(movie => (
-            <MovieCard 
+            <MovieCardWithStatus
               key={movie.id}
               id={movie.id}
               title={movie.title}
               imagePath={movie.imagePath}
               rating={movie.rating}
+              status="Upcoming"
             />
           ))}
         </div>

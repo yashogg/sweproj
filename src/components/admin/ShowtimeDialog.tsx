@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import ShowtimeManager from './ShowtimeManager';
+import { Badge } from '@/components/ui/badge';
 
 interface Showtime {
   id: number;
@@ -38,12 +39,21 @@ const ShowtimeDialog = ({
   onDeleteShowtime,
   onAddShowtime
 }: ShowtimeDialogProps) => {
+  if (!selectedMovie) return null;
+  
   return (
-    <DialogContent className="max-w-3xl">
+    <DialogContent className="max-w-3xl" aria-labelledby="showtime-dialog-title">
       <DialogHeader>
-        <DialogTitle>Manage Showtimes for {selectedMovie?.title}</DialogTitle>
+        <DialogTitle id="showtime-dialog-title">
+          <div className="flex items-center gap-3">
+            <span>Manage Showtimes for {selectedMovie.title}</span>
+            <Badge variant={selectedMovie.status === 'Now Playing' ? 'default' : 'outline'}>
+              {selectedMovie.status}
+            </Badge>
+          </div>
+        </DialogTitle>
         <DialogDescription>
-          Add, edit or remove showtimes for this movie.
+          Add, edit or remove showtimes for this movie. Changes will be reflected immediately.
         </DialogDescription>
       </DialogHeader>
 
@@ -54,7 +64,10 @@ const ShowtimeDialog = ({
         onAddShowtime={onAddShowtime}
       />
 
-      <DialogFooter>
+      <DialogFooter className="sm:justify-between">
+        <div className="text-sm text-muted-foreground">
+          {selectedMovie.showtimes.length} {selectedMovie.showtimes.length === 1 ? 'showtime' : 'showtimes'} total
+        </div>
         <DialogClose asChild>
           <Button>Done</Button>
         </DialogClose>

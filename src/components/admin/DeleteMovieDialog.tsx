@@ -9,6 +9,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 interface Movie {
   id: number;
@@ -27,18 +28,33 @@ const DeleteMovieDialog = ({ movie, onCancel, onConfirm }: DeleteMovieDialogProp
   return (
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-        <AlertDialogDescription>
-          This action cannot be undone. This will permanently delete the movie
-          "{movie.title}" and all its associated showtimes.
+        <div className="flex items-center gap-2 text-red-600">
+          <ExclamationTriangleIcon className="h-5 w-5" />
+          <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+        </div>
+        <AlertDialogDescription className="space-y-3">
+          <p className="font-medium">
+            Are you absolutely sure you want to delete "{movie.title}"?
+          </p>
+          <p>
+            This action cannot be undone. This will permanently delete the movie
+            and all its associated showtimes from our servers.
+          </p>
+          <p className="text-sm text-gray-500">
+            Note: Any tickets purchased for this movie's showtimes will still be 
+            maintained in the system for record-keeping purposes.
+          </p>
         </AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel onClick={onCancel}>
           Cancel
         </AlertDialogCancel>
-        <AlertDialogAction onClick={onConfirm}>
-          Delete
+        <AlertDialogAction 
+          onClick={onConfirm} 
+          className="bg-red-600 hover:bg-red-700 focus:ring-red-500"
+        >
+          Yes, Delete Movie
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
