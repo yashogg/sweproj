@@ -206,32 +206,8 @@ const MovieDetail = () => {
       <section className="container mx-auto px-5 py-12">
         <div className="flex flex-col md:flex-row gap-8">
           <div className="md:w-1/3">
-            <div className="bg-ticketeer-purple-dark p-1 rounded-md overflow-hidden">
-              <img 
-                src={movie.poster} 
-                alt={movie.title} 
-                className="w-full h-auto rounded"
-              />
-            </div>
-            
-            <div className="mt-8 bg-ticketeer-purple-dark p-6 rounded-md">
-              <h3 className="font-bold text-xl mb-4 text-white">Movie Info</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <span className="block text-gray-400 text-sm">Director</span>
-                  <span className="text-white">{movie.director}</span>
-                </div>
-                
-                <div>
-                  <span className="block text-gray-400 text-sm">Studios</span>
-                  <span className="text-white">{movie.studios.join(', ')}</span>
-                </div>
-              </div>
-            </div>
-
             {/* Ticket Booking Section */}
-            <div className="mt-8 bg-ticketeer-purple-dark p-6 rounded-md">
+            <div className="bg-ticketeer-purple-dark p-6 rounded-md">
               <h3 className="font-bold text-xl mb-4 text-white">Book Tickets</h3>
               
               <div className="space-y-4">
@@ -328,6 +304,22 @@ const MovieDetail = () => {
                   >
                     Buy Tickets
                   </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 bg-ticketeer-purple-dark p-6 rounded-md">
+              <h3 className="font-bold text-xl mb-4 text-white">Movie Info</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <span className="block text-gray-400 text-sm">Director</span>
+                  <span className="text-white">{movie.director}</span>
+                </div>
+                
+                <div>
+                  <span className="block text-gray-400 text-sm">Studios</span>
+                  <span className="text-white">{movie.studios.join(', ')}</span>
                 </div>
               </div>
             </div>
