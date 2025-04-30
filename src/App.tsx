@@ -24,6 +24,7 @@ import TicketReport from "./pages/admin/TicketReport";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AddMovie from "./pages/admin/AddMovie";
+import EditMovie from "./pages/admin/EditMovie";
 import NotFound from "./pages/NotFound";
 
 // Auth provider
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/movies" element={<MovieManagement />} />
             <Route path="/admin/movies/add" element={<AddMovie />} />
+            <Route path="/admin/movies/edit/:id" element={<EditMovie />} />
             <Route path="/admin/tickets" element={<TicketReport />} />
             <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/settings" element={<AdminSettings />} />

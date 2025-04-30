@@ -1,12 +1,11 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -14,22 +13,66 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
+import { NOW_PLAYING, UPCOMING } from '@/components/home/MovieData';
 
-const AddMovie = () => {
+interface MovieDetails {
+  id: number;
+  title: string;
+  genre: string;
+  description: string;
+  cast: string;
+  posterUrl: string;
+  status: string;
+  releaseDate: string;
+  rating?: number;
+}
+
+const EditMovie = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<MovieDetails>({
+    id: 0,
     title: '',
     genre: '',
     description: '',
     cast: '',
-    poster: null as File | null,
+    posterUrl: '',
     status: '',
     releaseDate: '',
-    showtime: '',
-    rating: 5.0
+    rating: 0
   });
+  const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  useEffect(() => {
+    // In a real app, this would fetch from an API
+    // For now, we'll just fetch from our sample data
+    if (!id) return;
+    
+    const movieId = parseInt(id);
+    const allMovies = [...NOW_PLAYING, ...UPCOMING];
+    const movie = allMovies.find(m => m.id === movieId);
+    
+    if (movie) {
+      setFormData({
+        id: movie.id,
+        title: movie.title,
+        genre: 'Action/Adventure', // Placeholder as it's not in our sample data
+        description: 'Movie description', // Placeholder
+        cast: 'Actor 1, Actor 2', // Placeholder
+        posterUrl: movie.imagePath,
+        status: NOW_PLAYING.some(m => m.id === movieId) ? 'nowPlaying' : 'upcoming',
+        releaseDate: '2025-05-01', // Placeholder
+        rating: movie.rating
+      });
+      
+      setImagePreview(movie.imagePath);
+    }
+    
+    setLoading(false);
+  }, [id]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -58,14 +101,16 @@ const AddMovie = () => {
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
     
-    setFormData({ ...formData, poster: file });
+    // In a real app, you would upload this file to a server
+    // For now, just update the form data with a placeholder
+    setFormData({ ...formData, posterUrl: previewUrl });
   };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate inputs
-    if (!formData.title || !formData.genre || !formData.description || !formData.status) {
+    if (!formData.title || !formData.genre || !formData.description) {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
@@ -74,67 +119,36 @@ const AddMovie = () => {
       return;
     }
     
-    if (!formData.poster) {
-      toast({
-        title: "Error",
-        description: "Please upload a movie poster.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Additional validation for release date
-    if (!formData.releaseDate) {
-      toast({
-        title: "Error",
-        description: "Please select a release date.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const releaseDate = new Date(formData.releaseDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    if (formData.status === 'nowPlaying' && releaseDate > today) {
-      toast({
-        title: "Invalid Release Date",
-        description: "Currently showing movies must have a release date in the present or past.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (formData.status === 'upcoming' && releaseDate <= today) {
-      toast({
-        title: "Invalid Release Date",
-        description: "Upcoming movies must have a future release date.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // In a real app, this would save the movie data
+    // In a real app, this would save the movie data to a database
     toast({
       title: "Success",
-      description: "Movie added successfully."
+      description: "Movie updated successfully."
     });
     
     // Navigate back to movie management
     navigate('/admin/movies');
   };
   
+  if (loading) {
+    return (
+      <AdminLayout title="Edit Movie">
+        <div className="flex justify-center items-center h-64">
+          <p>Loading movie details...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+  
   return (
-    <AdminLayout title="Add New Movie">
+    <AdminLayout title={`Edit Movie: ${formData.title}`}>
       <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-6">Add New Movie</h2>
+        <h2 className="text-xl font-semibold mb-6">Edit Movie</h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                Movie Title<span className="text-red-500">*</span>
+                Movie Title
               </label>
               <Input
                 id="title"
@@ -148,7 +162,7 @@ const AddMovie = () => {
             
             <div>
               <label htmlFor="genre" className="block text-sm font-medium text-gray-700 mb-1">
-                Genre<span className="text-red-500">*</span>
+                Genre
               </label>
               <Input
                 id="genre"
@@ -162,7 +176,7 @@ const AddMovie = () => {
             
             <div className="md:col-span-2">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                Description<span className="text-red-500">*</span>
+                Description
               </label>
               <Textarea
                 id="description"
@@ -208,7 +222,7 @@ const AddMovie = () => {
             
             <div>
               <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
-                Status<span className="text-red-500">*</span>
+                Status
               </label>
               <Select 
                 name="status"
@@ -228,7 +242,7 @@ const AddMovie = () => {
             
             <div>
               <label htmlFor="releaseDate" className="block text-sm font-medium text-gray-700 mb-1">
-                Release Date<span className="text-red-500">*</span>
+                Release Date
               </label>
               <Input
                 id="releaseDate"
@@ -237,13 +251,12 @@ const AddMovie = () => {
                 value={formData.releaseDate}
                 onChange={handleChange}
                 className="w-full"
-                required
               />
             </div>
             
             <div className="md:col-span-2">
               <label htmlFor="poster" className="block text-sm font-medium text-gray-700 mb-1">
-                Poster Upload<span className="text-red-500">*</span>
+                Poster Image
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -254,7 +267,6 @@ const AddMovie = () => {
                     className="w-full"
                     accept="image/*"
                     onChange={handleFileChange}
-                    required
                   />
                 </div>
                 <div>
@@ -272,23 +284,6 @@ const AddMovie = () => {
                 </div>
               </div>
             </div>
-            
-            <div className="md:col-span-2">
-              <label htmlFor="showtime" className="block text-sm font-medium text-gray-700 mb-1">
-                Initial Showtime (Optional)
-              </label>
-              <Input
-                id="showtime"
-                name="showtime"
-                value={formData.showtime}
-                onChange={handleChange}
-                className="w-full"
-                placeholder="e.g., 10:00 AM, 2:00 PM, 7:30 PM"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                You can add more showtimes after creating the movie
-              </p>
-            </div>
           </div>
           
           <div className="flex justify-end space-x-4 pt-4">
@@ -296,7 +291,7 @@ const AddMovie = () => {
               Cancel
             </Button>
             <Button type="submit">
-              Save Movie
+              Update Movie
             </Button>
           </div>
         </form>
@@ -305,4 +300,4 @@ const AddMovie = () => {
   );
 };
 
-export default AddMovie;
+export default EditMovie;

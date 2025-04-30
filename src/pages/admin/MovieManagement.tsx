@@ -21,6 +21,17 @@ import {
   DialogTrigger,
   DialogClose
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Edit, Trash2, Plus, Clock, Calendar } from 'lucide-react';
@@ -80,6 +91,7 @@ interface Movie {
 const MovieManagement = () => {
   const [movies, setMovies] = useState<Movie[]>(initialMovies);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
+  const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [newShowtime, setNewShowtime] = useState({
     time: "",
     date: "",
@@ -97,6 +109,30 @@ const MovieManagement = () => {
       toast({
         title: "Validation Error",
         description: "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate date is not in the past
+    const selectedDate = new Date(newShowtime.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (selectedDate < today) {
+      toast({
+        title: "Invalid Date",
+        description: "Cannot add showtimes for past dates",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate price is positive
+    if (newShowtime.price <= 0) {
+      toast({
+        title: "Invalid Price",
+        description: "Price must be greater than zero",
         variant: "destructive"
       });
       return;
@@ -144,6 +180,35 @@ const MovieManagement = () => {
     const movie = movies.find(m => m.id === movieId);
     if (!movie) return;
 
+    // Validation for date field
+    if (field === 'date') {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate < today) {
+        toast({
+          title: "Invalid Date",
+          description: "Cannot schedule showtimes for past dates",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // Validation for price field
+    if (field === 'price') {
+      const price = parseFloat(value);
+      if (isNaN(price) || price <= 0) {
+        toast({
+          title: "Invalid Price",
+          description: "Price must be a positive number",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     const updatedShowtimes = movie.showtimes.map(s => {
       if (s.id === showtimeId) {
         if (field === 'price') {
@@ -159,6 +224,16 @@ const MovieManagement = () => {
     
     setMovies(updatedMovies);
     setSelectedMovie(updatedMovie);
+  };
+
+  const handleDeleteMovie = (movie: Movie) => {
+    const updatedMovies = movies.filter(m => m.id !== movie.id);
+    setMovies(updatedMovies);
+    
+    toast({
+      title: "Movie Deleted",
+      description: `${movie.title} has been deleted`
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -310,6 +385,7 @@ const MovieManagement = () => {
                                   id="date" 
                                   type="date"
                                   value={newShowtime.date}
+                                  min={new Date().toISOString().split('T')[0]} // Prevent selecting dates in the past
                                   onChange={(e) => setNewShowtime({...newShowtime, date: e.target.value})}
                                 />
                               </div>
@@ -337,7 +413,7 @@ const MovieManagement = () => {
                                 <Input 
                                   id="price" 
                                   type="number"
-                                  min="0"
+                                  min="0.01"
                                   step="0.01"
                                   value={newShowtime.price}
                                   onChange={(e) => setNewShowtime({
@@ -365,13 +441,49 @@ const MovieManagement = () => {
                     </DialogContent>
                   </Dialog>
 
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(`/admin/movies/edit/${movie.id}`)}
+                  >
                     <Edit className="w-4 h-4 mr-1" /> Edit
                   </Button>
                   
-                  <Button variant="destructive" size="sm">
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setMovieToDelete(movie)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-1" /> Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete the movie
+                          "{movieToDelete?.title}" and all its associated showtimes.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setMovieToDelete(null)}>
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={() => {
+                            if (movieToDelete) {
+                              handleDeleteMovie(movieToDelete);
+                              setMovieToDelete(null);
+                            }
+                          }}
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </TableCell>
               </TableRow>
             ))}
