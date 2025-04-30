@@ -13,9 +13,9 @@ const UserProfile = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Profile form state
+  // Profile form state - using 'name' instead of 'displayName'
   const [profileData, setProfileData] = useState({
-    name: user?.displayName || '',
+    name: user?.name || '',
     email: user?.email || '',
     phone: '(555) 123-4567', // Placeholder data
     address: '123 Main St, Anytown, USA' // Placeholder data

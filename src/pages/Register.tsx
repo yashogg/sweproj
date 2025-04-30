@@ -58,8 +58,14 @@ const Register = () => {
     try {
       setIsLoading(true);
       
-      // In a real app, this would send data to an API
-      await register(formData.email, formData.password, formData.name);
+      // Calling register with all 5 required arguments instead of 3
+      await register(
+        formData.name,
+        formData.email, 
+        formData.password,
+        formData.phone,
+        formData.address
+      );
       
       toast({
         title: "Registration successful!",
