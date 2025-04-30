@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -96,6 +97,24 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-movie-dark text-movie-text;
+    font-family: 'Inter', sans-serif;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  .accent-btn {
+    @apply bg-movie-accent text-black font-bold py-1 px-2 rounded-sm text-xs hover:brightness-110 transition-all;
   }
 }
