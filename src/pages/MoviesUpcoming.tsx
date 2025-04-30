@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { Filter, ChevronDown, Calendar } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import MovieCard from '@/components/MovieCard';
 
@@ -21,54 +20,14 @@ const upcomingMovies = [
 ];
 
 const MoviesUpcoming = () => {
-  const [movies, setMovies] = useState(upcomingMovies);
-  const [activeFilter, setActiveFilter] = useState('All');
-  
-  const filters = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Sci-Fi'];
-  
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    // In a real app, you would filter the movies based on the selected genre
-    setMovies(upcomingMovies);
-  };
+  const [movies] = useState(upcomingMovies);
 
   return (
     <Layout title="Upcoming Movies">
       <div className="bg-gradient-to-b from-ticketeer-purple-darker to-background py-8">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-white flex items-center">
-              <Calendar className="mr-2" /> Coming Soon
-            </h1>
-            
-            <div className="flex items-center space-x-2">
-              <button className="flex items-center bg-white bg-opacity-20 px-4 py-2 rounded text-white hover:bg-opacity-30 transition-all">
-                <Filter className="w-4 h-4 mr-2" />
-                <span>Filters</span>
-              </button>
-              
-              <button className="flex items-center bg-white bg-opacity-20 px-4 py-2 rounded text-white hover:bg-opacity-30 transition-all">
-                <span>Sort By: Release Date</span>
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </div>
-          
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {filters.map(filter => (
-              <button
-                key={filter}
-                className={`px-4 py-2 rounded-full text-sm ${
-                  activeFilter === filter 
-                    ? 'bg-ticketeer-purple text-white' 
-                    : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
-                }`}
-                onClick={() => handleFilterChange(filter)}
-              >
-                {filter}
-              </button>
-            ))}
+            <h1 className="text-3xl font-bold text-white">Coming Soon</h1>
           </div>
         </div>
       </div>

@@ -17,8 +17,13 @@ import UserProfile from "./pages/UserProfile";
 import OrderHistory from "./pages/OrderHistory";
 import Checkout from "./pages/Checkout";
 import TicketConfirmation from "./pages/TicketConfirmation";
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
-import AdminMovies from "./pages/admin/Movies";
+import MovieManagement from "./pages/admin/MovieManagement";
+import TicketReport from "./pages/admin/TicketReport";
+import UserManagement from "./pages/admin/UserManagement";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AddMovie from "./pages/admin/AddMovie";
 import NotFound from "./pages/NotFound";
 
 // Auth provider
@@ -50,8 +55,13 @@ const App = () => (
             <Route path="/ticket/:id" element={<TicketConfirmation />} />
             
             {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/movies" element={<AdminMovies />} />
+            <Route path="/admin/movies" element={<MovieManagement />} />
+            <Route path="/admin/movies/add" element={<AddMovie />} />
+            <Route path="/admin/tickets" element={<TicketReport />} />
+            <Route path="/admin/users" element={<UserManagement />} />
+            <Route path="/admin/settings" element={<AdminSettings />} />
             
             {/* 404 */}
             <Route path="*" element={<NotFound />} />

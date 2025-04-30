@@ -64,10 +64,13 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-ticketeer-purple-dark flex justify-center">
+        <div className="mt-12 pt-8 border-t border-ticketeer-purple-dark flex justify-between">
           <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} Ticketeer. All Rights Reserved.
           </p>
+          <Link to="/admin/login" className="text-sm text-gray-400 hover:text-ticketeer-yellow">
+            Admin Login
+          </Link>
         </div>
       </div>
     </footer>
