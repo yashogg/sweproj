@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -47,9 +46,6 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex-shrink-0 flex items-center">
             <Link to="/" className="flex items-center">
-              <div className="bg-ticketeer-yellow px-2 py-1 mr-2 text-xs font-bold uppercase text-black">
-                Ticketeer
-              </div>
               <span className="text-2xl font-bold text-white">Ticketeer</span>
             </Link>
           </div>

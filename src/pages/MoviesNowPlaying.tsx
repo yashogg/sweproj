@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { Filter, ChevronDown } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import MovieCard from '@/components/MovieCard';
 
@@ -21,16 +20,7 @@ const nowPlayingMovies = [
 ];
 
 const MoviesNowPlaying = () => {
-  const [movies, setMovies] = useState(nowPlayingMovies);
-  const [activeFilter, setActiveFilter] = useState('All');
-  
-  const filters = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Sci-Fi'];
-  
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    // In a real app, you would filter the movies based on the selected genre
-    setMovies(nowPlayingMovies);
-  };
+  const [movies] = useState(nowPlayingMovies);
 
   return (
     <Layout title="Now Playing Movies">
@@ -38,35 +28,6 @@ const MoviesNowPlaying = () => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-white">Now Playing</h1>
-            
-            <div className="flex items-center space-x-2">
-              <button className="flex items-center bg-white bg-opacity-20 px-4 py-2 rounded text-white hover:bg-opacity-30 transition-all">
-                <Filter className="w-4 h-4 mr-2" />
-                <span>Filters</span>
-              </button>
-              
-              <button className="flex items-center bg-white bg-opacity-20 px-4 py-2 rounded text-white hover:bg-opacity-30 transition-all">
-                <span>Sort By: Popular</span>
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </div>
-          
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {filters.map(filter => (
-              <button
-                key={filter}
-                className={`px-4 py-2 rounded-full text-sm ${
-                  activeFilter === filter 
-                    ? 'bg-ticketeer-purple text-white' 
-                    : 'bg-white bg-opacity-20 text-white hover:bg-opacity-30'
-                }`}
-                onClick={() => handleFilterChange(filter)}
-              >
-                {filter}
-              </button>
-            ))}
           </div>
         </div>
       </div>
