@@ -9,7 +9,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { AlertTriangle } from 'lucide-react';
 
 interface Movie {
   id: number;
@@ -29,7 +29,7 @@ const DeleteMovieDialog = ({ movie, onCancel, onConfirm }: DeleteMovieDialogProp
     <AlertDialogContent>
       <AlertDialogHeader>
         <div className="flex items-center gap-2 text-red-600">
-          <ExclamationTriangleIcon className="h-5 w-5" />
+          <AlertTriangle className="h-5 w-5" />
           <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
         </div>
         <AlertDialogDescription className="space-y-3">
