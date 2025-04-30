@@ -5,18 +5,18 @@ import MovieCard from '@/components/MovieCard';
 
 // Sample movie data - now playing movies
 const nowPlayingMovies = [
-  { id: 1, title: "Spider-Man: No Way Home", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man", rating: 8.4 },
-  { id: 2, title: "The Batman", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Batman", rating: 8.0 },
-  { id: 3, title: "Doctor Strange", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Dr+Strange", rating: 7.9 },
-  { id: 4, title: "Black Panther: Wakanda Forever", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Black+Panther", rating: 7.8 },
-  { id: 5, title: "Thor: Love and Thunder", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Thor", rating: 7.5 },
-  { id: 6, title: "Top Gun: Maverick", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Top+Gun", rating: 8.7 },
-  { id: 7, title: "Avatar: The Way of Water", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Avatar", rating: 8.1 },
-  { id: 8, title: "Black Adam", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Black+Adam", rating: 7.2 },
-  { id: 9, title: "Ant-Man: Quantumania", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Ant-Man", rating: 7.0 },
-  { id: 10, title: "Shazam! Fury of the Gods", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Shazam", rating: 6.9 },
-  { id: 11, title: "The Flash", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Flash", rating: 7.3 },
-  { id: 12, title: "Guardians of the Galaxy Vol. 3", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Guardians", rating: 8.5 }
+  { id: 1, title: "Spider-Man: No Way Home", imagePath: "https://image.tmdb.org/t/p/w300/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", rating: 8.4 },
+  { id: 2, title: "The Batman", imagePath: "https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg", rating: 8.0 },
+  { id: 3, title: "Doctor Strange", imagePath: "https://image.tmdb.org/t/p/w300/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg", rating: 7.9 },
+  { id: 4, title: "Black Panther: Wakanda Forever", imagePath: "https://image.tmdb.org/t/p/w300/sv1xJUazXeYqALzczSZ3O6nkH75.jpg", rating: 7.8 },
+  { id: 5, title: "Thor: Love and Thunder", imagePath: "https://image.tmdb.org/t/p/w300/pIkRyD18kl4FhoCNQuWxWu5cBLM.jpg", rating: 7.5 },
+  { id: 6, title: "Top Gun: Maverick", imagePath: "https://image.tmdb.org/t/p/w300/62HCnUTziyWcpDaBO2i1DX17ljH.jpg", rating: 8.7 },
+  { id: 7, title: "Avatar: The Way of Water", imagePath: "https://image.tmdb.org/t/p/w300/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg", rating: 8.1 },
+  { id: 8, title: "Black Adam", imagePath: "https://image.tmdb.org/t/p/w300/3zXceNTtyj5FLjwQXuPvLpK8nYr.jpg", rating: 7.2 },
+  { id: 9, title: "Ant-Man: Quantumania", imagePath: "https://image.tmdb.org/t/p/w300/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg", rating: 7.0 },
+  { id: 10, title: "Shazam! Fury of the Gods", imagePath: "https://image.tmdb.org/t/p/w300/2VK4d3mqqTc7LVZLnLPeRiPaJ71.jpg", rating: 6.9 },
+  { id: 11, title: "The Flash", imagePath: "https://image.tmdb.org/t/p/w300/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg", rating: 7.3 },
+  { id: 12, title: "Guardians of the Galaxy Vol. 3", imagePath: "https://image.tmdb.org/t/p/w300/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg", rating: 8.5 }
 ];
 
 const MoviesNowPlaying = () => {

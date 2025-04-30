@@ -19,18 +19,18 @@ const movieData = {
   tagline: "The Multiverse unleashed.",
   description: "Peter Parker is unmasked and no longer able to separate his normal life from the high-stakes of being a super-hero. When he asks for help from Doctor Strange the stakes become even more dangerous, forcing him to discover what it truly means to be Spider-Man.",
   poster: "/lovable-uploads/06cfccd8-26cd-4e91-8045-d77d80b03755.png",
-  backdrop: "",
+  backdrop: "https://image.tmdb.org/t/p/original/iQFcwSGbZXMkeyKrxbPnwnRo5fl.jpg",
   releaseDate: "December 17, 2021",
   duration: "2h 28m",
   genres: ["Action", "Adventure", "Science Fiction"],
   rating: 8.4,
   director: "Jon Watts",
   cast: [
-    { name: "Tom Holland", character: "Peter Parker / Spider-Man", photo: "https://via.placeholder.com/100x100/2D1B4E/FFFFFF?text=TH" },
-    { name: "Zendaya", character: "MJ", photo: "https://via.placeholder.com/100x100/2D1B4E/FFFFFF?text=Z" },
-    { name: "Benedict Cumberbatch", character: "Dr. Stephen Strange", photo: "https://via.placeholder.com/100x100/2D1B4E/FFFFFF?text=BC" },
-    { name: "Jacob Batalon", character: "Ned Leeds", photo: "https://via.placeholder.com/100x100/2D1B4E/FFFFFF?text=JB" },
-    { name: "Jon Favreau", character: "Happy Hogan", photo: "https://via.placeholder.com/100x100/2D1B4E/FFFFFF?text=JF" }
+    { name: "Tom Holland", character: "Peter Parker / Spider-Man", photo: "https://image.tmdb.org/t/p/w138_and_h175_face/bBRlrpJm9XkNSg0YT5LCaxqoFk0.jpg" },
+    { name: "Zendaya", character: "MJ", photo: "https://image.tmdb.org/t/p/w138_and_h175_face/r3A7ev7QkjOGocVn3kQrJ0eOoAa.jpg" },
+    { name: "Benedict Cumberbatch", character: "Dr. Stephen Strange", photo: "https://image.tmdb.org/t/p/w138_and_h175_face/fBEucxECxGLKVHBznO0qHtCGiMO.jpg" },
+    { name: "Jacob Batalon", character: "Ned Leeds", photo: "https://image.tmdb.org/t/p/w138_and_h175_face/53YCveE5xL3kCnFdIioXykwCkKb.jpg" },
+    { name: "Jon Favreau", character: "Happy Hogan", photo: "https://image.tmdb.org/t/p/w138_and_h175_face/8MqRtDqHZfUSbWxB4nNYOEgCUUX.jpg" }
   ],
   studios: ["Marvel Studios", "Columbia Pictures", "Pascal Pictures"],
   reviews: [
@@ -70,6 +70,7 @@ const MovieDetail = () => {
         releaseDate={movie.releaseDate}
         duration={movie.duration}
         genres={movie.genres}
+        backdrop={movie.backdrop} // Pass the backdrop image
       />
       
       {/* Movie Details */}

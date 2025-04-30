@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -9,11 +8,11 @@ import { Button } from '@/components/ui/button';
 
 // Sample combined movie data
 const allMovies = [
-  { id: 1, title: "Spider-Man: No Way Home", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man", rating: 8.4 },
-  { id: 2, title: "The Batman", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Batman", rating: 8.0 },
-  { id: 13, title: "Dune: Part Two", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Dune+2", rating: 8.5 },
-  { id: 14, title: "The Marvels", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=The+Marvels", rating: 7.8 },
-  { id: 5, title: "Thor: Love and Thunder", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Thor", rating: 7.5 },
+  { id: 1, title: "Spider-Man: No Way Home", imagePath: "https://image.tmdb.org/t/p/w300/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", rating: 8.4 },
+  { id: 2, title: "The Batman", imagePath: "https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg", rating: 8.0 },
+  { id: 13, title: "Dune: Part Two", imagePath: "https://image.tmdb.org/t/p/w300/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg", rating: 8.5 },
+  { id: 14, title: "The Marvels", imagePath: "https://image.tmdb.org/t/p/w300/Ag3D9qXjhJ2FUkrlJ0Cv1pgxqYQ.jpg", rating: 7.8 },
+  { id: 5, title: "Thor: Love and Thunder", imagePath: "https://image.tmdb.org/t/p/w300/pIkRyD18kl4FhoCNQuWxWu5cBLM.jpg", rating: 7.5 },
   // Add more movies here as needed
 ];
 

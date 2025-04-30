@@ -7,11 +7,16 @@ interface MovieHeroProps {
   releaseDate: string;
   duration: string;
   genres: string[];
+  backdrop?: string; // Add backdrop prop
 }
 
-const MovieHero = ({ title, tagline, releaseDate, duration, genres }: MovieHeroProps) => {
+const MovieHero = ({ title, tagline, releaseDate, duration, genres, backdrop }: MovieHeroProps) => {
+  const backgroundStyle = backdrop 
+    ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${backdrop})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    : { backgroundColor: '#2D1B4E' }; // Default background if no backdrop
+
   return (
-    <section className="relative h-[70vh] bg-ticketeer-purple">
+    <section className="relative h-[70vh]" style={backgroundStyle}>
       <div className="container mx-auto h-full flex items-end pb-16 px-5">
         <div className="max-w-3xl">
           <h1 className="text-4xl md:text-6xl font-bold mb-2 text-white">{title}</h1>
