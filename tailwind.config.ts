@@ -53,11 +53,18 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Custom colors for our entertainment platform
-				"movie-dark": "#1A0B2E",
-				"movie-light": "#2D1B4E", 
-				"movie-accent": "#FFCE31",
-				"movie-text": "#FFFFFF",
+				// Ticketeer custom color palette
+				"ticketeer-purple": "#9b87f5",
+				"ticketeer-purple-dark": "#7E69AB", 
+				"ticketeer-purple-darker": "#1A1F2C",
+				"ticketeer-purple-light": "#D6BCFA",
+				"ticketeer-purple-soft": "#E5DEFF",
+				"ticketeer-blue": "#1EAEDB",
+				"ticketeer-blue-light": "#33C3F0",
+				"ticketeer-gray-dark": "#222222",
+				"ticketeer-gray-medium": "#999999",
+				"ticketeer-gray-light": "#cccccc",
+				"ticketeer-red": "#ea384c",
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

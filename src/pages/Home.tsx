@@ -1,83 +1,271 @@
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
-import Navigation from '../components/Navigation';
-import Footer from '../components/Footer';
-import CategoryRow from '../components/CategoryRow';
+import { useNavigate } from 'react-router-dom';
+import Layout from '@/components/layout/Layout';
+import { Button } from '@/components/ui/button';
+import { Ticket, ChevronRight, Calendar, Film } from 'lucide-react';
+import MovieCard from '@/components/MovieCard';
+import { useToast } from '@/hooks/use-toast';
 
-// Sample data
-const popularMovies = [
-  { id: 1, title: "Spider-Man: No Way Home", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man", rating: 8.4 },
-  { id: 2, title: "The Batman", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Batman", rating: 8.0 },
-  { id: 3, title: "Doctor Strange", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Dr+Strange", rating: 7.9 },
-  { id: 4, title: "Black Panther: Wakanda Forever", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Black+Panther", rating: 7.8 },
-  { id: 5, title: "Thor: Love and Thunder", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Thor", rating: 7.5 },
-  { id: 6, title: "Top Gun: Maverick", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Top+Gun", rating: 8.7 }
+// Sample data for featured movie
+const FEATURED_MOVIE = {
+  id: "1",
+  title: "Inception",
+  description: "A thief who enters the dreams of others to steal secrets from their subconscious. His rare ability has made him a highly sought-after corporate spy but has also cost him everything he once held dear.",
+  image: "https://via.placeholder.com/1200x600/9b87f5/FFFFFF?text=Inception",
+  director: "Christopher Nolan",
+  cast: ["Leonardo DiCaprio", "Joseph Gordon-Levitt", "Ellen Page"],
+  duration: "2h 28m",
+  rating: 8.8
+};
+
+// Sample data for now playing movies
+const NOW_PLAYING = [
+  { id: "1", title: "Inception", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Inception", rating: 8.8 },
+  { id: "2", title: "The Shawshank Redemption", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Shawshank", rating: 9.3 },
+  { id: "3", title: "The Dark Knight", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Dark+Knight", rating: 9.0 },
+  { id: "4", title: "Pulp Fiction", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Pulp+Fiction", rating: 8.9 }
 ];
 
-const newReleases = [
-  { id: 7, title: "Avatar: The Way of Water", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Avatar", rating: 8.1 },
-  { id: 8, title: "Black Adam", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Black+Adam", rating: 7.2 },
-  { id: 9, title: "Ant-Man: Quantumania", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Ant-Man", rating: 7.0 },
-  { id: 10, title: "Shazam! Fury of the Gods", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Shazam", rating: 6.9 },
-  { id: 11, title: "The Flash", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Flash", rating: 7.3 },
-  { id: 12, title: "Guardians of the Galaxy Vol. 3", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Guardians", rating: 8.5 }
+// Sample data for upcoming movies
+const UPCOMING = [
+  { id: "5", title: "Dune: Part Two", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Dune+2", rating: 8.5 },
+  { id: "6", title: "The Batman", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Batman", rating: 8.4 },
+  { id: "7", title: "Black Panther 2", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Black+Panther+2", rating: 7.9 },
+  { id: "8", title: "Avatar 3", image: "https://via.placeholder.com/300x450/9b87f5/FFFFFF?text=Avatar+3", rating: 8.2 }
+];
+
+// Theater locations for selection
+const THEATERS = [
+  "Lubbock",
+  "Amarillo",
+  "Levelland",
+  "Plainview",
+  "Snyder",
+  "Abilene"
 ];
 
 const Home = () => {
-  const [featuredMovie, setFeaturedMovie] = useState({
-    id: 1,
-    title: "Spider-Man: No Way Home",
-    description: "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear, forcing Peter to discover what it truly means to be Spider-Man.",
-    backdrop: "https://via.placeholder.com/1920x1080/2D1B4E/FFFFFF?text=Spider-Man+Background",
-    poster: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man",
-    rating: 8.4
-  });
-
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedTheater, setSelectedTheater] = useState(THEATERS[0]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // Format date for display
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'short',
+      month: 'short', 
+      day: 'numeric'
+    });
+  };
+  
+  // Get dates for the next 7 days
+  const getNextDays = (days: number) => {
+    return Array.from({ length: days }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() + i);
+      return date;
+    });
+  };
+  
+  const nextDays = getNextDays(7);
+  
   return (
-    <div className="min-h-screen flex flex-col bg-movie-dark text-white">
-      <Navigation />
+    <Layout title="Book Movie Tickets Online">
+      {/* Hero Section with Featured Movie */}
+      <section className="relative">
+        <div 
+          className="h-[70vh] bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${FEATURED_MOVIE.image})`
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-ticketeer-purple-darker to-transparent opacity-70"></div>
+          <div className="container mx-auto px-4 h-full flex items-center">
+            <div className="max-w-2xl text-white z-10">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+                {FEATURED_MOVIE.title}
+              </h1>
+              <p className="text-lg mb-8">
+                {FEATURED_MOVIE.description}
+              </p>
+              <div className="flex flex-wrap items-center gap-4 mb-8 text-sm">
+                <span className="bg-ticketeer-purple px-3 py-1 rounded-full">
+                  IMDb {FEATURED_MOVIE.rating}/10
+                </span>
+                <span>{FEATURED_MOVIE.duration}</span>
+                <span>Director: {FEATURED_MOVIE.director}</span>
+              </div>
+              <Button 
+                onClick={() => navigate(`/movies/${FEATURED_MOVIE.id}`)} 
+                className="btn-primary text-lg"
+              >
+                <Ticket className="mr-2" /> Book Tickets
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
       
-      <main className="flex-grow">
-        {/* Hero Section */}
-        <section className="relative h-[70vh] bg-cover bg-center" style={{ 
-          backgroundImage: `linear-gradient(to top, #1A0B2E, transparent), url(${featuredMovie.backdrop})` 
-        }}>
-          <div className="container mx-auto h-full flex items-end pb-16 px-5">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">{featuredMovie.title}</h1>
-              <p className="text-sm md:text-base mb-6 text-gray-200">{featuredMovie.description}</p>
-              <div className="flex space-x-4">
-                <button className="px-6 py-3 bg-movie-accent text-black font-bold rounded hover:brightness-110 transition-all flex items-center">
-                  <span>Watch Now</span>
-                </button>
-                <button className="px-6 py-3 bg-opacity-20 bg-white border border-white rounded font-bold hover:bg-opacity-30 transition-all">
-                  Add to Watchlist
-                </button>
+      {/* Quick Booking Section */}
+      <section className="py-8 bg-ticketeer-purple-soft">
+        <div className="container mx-auto px-4">
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-ticketeer-purple-dark mb-4">Quick Booking</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Theater Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Theater
+                </label>
+                <select 
+                  value={selectedTheater} 
+                  onChange={(e) => setSelectedTheater(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-ticketeer-purple focus:border-transparent"
+                >
+                  {THEATERS.map((theater) => (
+                    <option key={theater} value={theater}>{theater}</option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* Date Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select Date
+                </label>
+                <div className="flex gap-2 overflow-x-auto pb-2">
+                  {nextDays.map((date, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedDate(date)}
+                      className={`min-w-[80px] p-2 text-center text-sm rounded-md ${
+                        date.toDateString() === selectedDate.toDateString()
+                          ? 'bg-ticketeer-purple text-white'
+                          : 'bg-gray-100 hover:bg-gray-200'
+                      }`}
+                    >
+                      {formatDate(date)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Action Button */}
+              <div className="flex items-end">
+                <Button 
+                  onClick={() => navigate('/movies/now-playing')}
+                  className="w-full bg-ticketeer-purple hover:bg-ticketeer-purple-dark text-white"
+                >
+                  Find Movies <ChevronRight className="ml-1" />
+                </Button>
               </div>
             </div>
           </div>
-        </section>
-
-        {/* Content Sections */}
-        <div className="container mx-auto px-5 py-10">
-          <CategoryRow 
-            title="Popular Movies" 
-            movies={popularMovies}
-            viewAllLink="/movies/popular"
-          />
-          
-          <CategoryRow 
-            title="New Releases" 
-            movies={newReleases}
-            viewAllLink="/movies/new"
-          />
         </div>
-      </main>
+      </section>
       
-      <Footer />
-    </div>
+      {/* Now Playing Section */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-ticketeer-purple-dark flex items-center">
+              <Film className="mr-2" /> Now Playing
+            </h2>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/movies/now-playing')}
+              className="text-ticketeer-purple hover:text-ticketeer-purple-dark"
+            >
+              View All <ChevronRight className="ml-1" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {NOW_PLAYING.map((movie) => (
+              <MovieCard 
+                key={movie.id}
+                id={Number(movie.id)}
+                title={movie.title}
+                imagePath={movie.image}
+                rating={movie.rating}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Upcoming Movies Section */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-ticketeer-purple-dark flex items-center">
+              <Calendar className="mr-2" /> Coming Soon
+            </h2>
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate('/movies/upcoming')}
+              className="text-ticketeer-purple hover:text-ticketeer-purple-dark"
+            >
+              View All <ChevronRight className="ml-1" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {UPCOMING.map((movie) => (
+              <MovieCard 
+                key={movie.id}
+                id={Number(movie.id)}
+                title={movie.title}
+                imagePath={movie.image}
+                rating={movie.rating}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* User Benefits Section */}
+      <section className="py-16 bg-ticketeer-purple-darker text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-bold mb-8">Why Book with Ticketeer?</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-6 bg-ticketeer-purple-dark bg-opacity-30 rounded-lg">
+              <div className="bg-ticketeer-purple rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Ticket className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Skip the Lines</h3>
+              <p>Say goodbye to long queues. Book your tickets online and walk right in.</p>
+            </div>
+            
+            <div className="p-6 bg-ticketeer-purple-dark bg-opacity-30 rounded-lg">
+              <div className="bg-ticketeer-purple rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Film className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Latest Movies</h3>
+              <p>Get access to the newest releases and exclusive screenings at our theaters.</p>
+            </div>
+            
+            <div className="p-6 bg-ticketeer-purple-dark bg-opacity-30 rounded-lg">
+              <div className="bg-ticketeer-purple rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Calendar className="h-8 w-8" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Easy Planning</h3>
+              <p>View showtimes, read reviews, and plan your movie night effortlessly.</p>
+            </div>
+          </div>
+          
+          <Button 
+            onClick={() => navigate('/register')} 
+            className="mt-12 btn-primary text-lg"
+          >
+            Sign Up Now
+          </Button>
+        </div>
+      </section>
+    </Layout>
   );
 };
 
