@@ -1,5 +1,6 @@
 
-import { useParams, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 
 // Import our new components
