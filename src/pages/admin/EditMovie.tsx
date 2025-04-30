@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { getMovieById, updateMovie } from '@/components/home/MovieData';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface MovieDetails {
   id: number;
@@ -47,9 +49,14 @@ const EditMovie = () => {
   });
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      setError("No movie ID provided");
+      setLoading(false);
+      return;
+    }
     
     const movieId = parseInt(id);
     const movie = getMovieById(movieId);
@@ -71,12 +78,12 @@ const EditMovie = () => {
       setImagePreview(movie.imagePath);
     } else {
       // Movie not found
+      setError("Movie not found");
       toast({
         title: "Error",
         description: "Movie not found",
         variant: "destructive"
       });
-      navigate('/admin/movies');
     }
     
     setLoading(false);
@@ -185,6 +192,7 @@ const EditMovie = () => {
         });
       }
     } catch (error) {
+      console.error("Update error:", error);
       toast({
         title: "Error",
         description: "An error occurred while updating the movie",
@@ -198,6 +206,22 @@ const EditMovie = () => {
       <AdminLayout title="Edit Movie">
         <div className="flex justify-center items-center h-64">
           <p>Loading movie details...</p>
+        </div>
+      </AdminLayout>
+    );
+  }
+  
+  if (error) {
+    return (
+      <AdminLayout title="Edit Movie">
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <div className="flex justify-center mt-4">
+          <Button onClick={() => navigate('/admin/movies')}>
+            Return to Movies
+          </Button>
         </div>
       </AdminLayout>
     );

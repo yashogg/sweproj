@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Clock, Edit, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
 
 interface Showtime {
   id: number;
@@ -41,6 +42,19 @@ const MovieTable = ({
 }: MovieTableProps) => {
   const navigate = useNavigate();
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'now playing':
+        return 'bg-green-100 text-green-800';
+      case 'upcoming':
+        return 'bg-blue-100 text-blue-800';
+      case 'finished':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-blue-100 text-blue-800';
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -58,13 +72,9 @@ const MovieTable = ({
             <TableCell className="font-medium">{movie.id}</TableCell>
             <TableCell>{movie.title}</TableCell>
             <TableCell>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                movie.status === 'Now Playing' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-blue-100 text-blue-800'
-              }`}>
+              <Badge variant={movie.status.toLowerCase() === 'now playing' ? 'default' : 'secondary'} className={getStatusColor(movie.status)}>
                 {movie.status}
-              </span>
+              </Badge>
             </TableCell>
             <TableCell>{movie.showtimes.length} showtimes</TableCell>
             <TableCell className="text-right space-x-2">
@@ -93,7 +103,6 @@ const MovieTable = ({
                   <Button 
                     variant="destructive" 
                     size="sm"
-                    onClick={() => onDeleteConfirm(movie)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" /> Delete
                   </Button>

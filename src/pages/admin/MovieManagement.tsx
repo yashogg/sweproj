@@ -9,7 +9,7 @@ import { AlertDialog } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { NOW_PLAYING, UPCOMING, deleteMovie } from '@/components/home/MovieData';
 
-// Import our new components
+// Import our components
 import MovieTable from '@/components/admin/MovieTable';
 import ShowtimeDialog from '@/components/admin/ShowtimeDialog';
 import DeleteMovieDialog from '@/components/admin/DeleteMovieDialog';
@@ -33,6 +33,7 @@ const MovieManagement = () => {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [movieToDelete, setMovieToDelete] = useState<Movie | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [newShowtime, setNewShowtime] = useState({
     time: "",
     date: "",
@@ -260,6 +261,8 @@ const MovieManagement = () => {
         variant: "destructive"
       });
     }
+    
+    setShowDeleteDialog(false);
   };
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -314,10 +317,13 @@ const MovieManagement = () => {
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <AlertDialog>
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <DeleteMovieDialog 
             movie={movieToDelete}
-            onCancel={() => setMovieToDelete(null)}
+            onCancel={() => {
+              setShowDeleteDialog(false);
+              setMovieToDelete(null);
+            }}
             onConfirm={() => {
               if (movieToDelete) {
                 handleDeleteMovie(movieToDelete);
