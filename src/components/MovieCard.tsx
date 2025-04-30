@@ -20,8 +20,8 @@ const MovieCard = ({ id, title, imagePath, rating }: MovieCardProps) => {
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         ) : (
-          <div className="w-full h-full bg-ticketeer-purple-dark flex items-center justify-center">
-            <span className="text-gray-400">No Image</span>
+          <div className="w-full h-full bg-ticketeer-purple-dark flex items-center justify-center p-4">
+            <h3 className="text-center font-medium text-white">{title}</h3>
           </div>
         )}
         
