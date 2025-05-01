@@ -52,26 +52,26 @@ const UserManagement = () => {
   return (
     <AdminLayout title="User Management">
       <div className="bg-gray-100 p-6 rounded-lg">
-        <h2 className="text-xl font-semibold mb-4">User List Table</h2>
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">User List Table</h2>
         
         <div className="overflow-x-auto bg-white">
           <table className="min-w-full border-collapse">
             <thead className="border-b">
               <tr>
-                <th className="py-3 px-4 text-left font-medium">Name</th>
-                <th className="py-3 px-4 text-left font-medium">Email Address</th>
-                <th className="py-3 px-4 text-left font-medium">Date Joined</th>
-                <th className="py-3 px-4 text-left font-medium">Total Tickets Bought</th>
-                <th className="py-3 px-4 text-left font-medium">Actions</th>
+                <th className="py-3 px-4 text-left font-medium text-gray-700">Name</th>
+                <th className="py-3 px-4 text-left font-medium text-gray-700">Email Address</th>
+                <th className="py-3 px-4 text-left font-medium text-gray-700">Date Joined</th>
+                <th className="py-3 px-4 text-left font-medium text-gray-700">Total Tickets Bought</th>
+                <th className="py-3 px-4 text-left font-medium text-gray-700">Actions</th>
               </tr>
             </thead>
             <tbody>
               {userData.map((user) => (
                 <tr key={user.id} className="border-b">
-                  <td className="py-3 px-4">{user.name}</td>
-                  <td className="py-3 px-4">{user.email}</td>
-                  <td className="py-3 px-4">{user.dateJoined}</td>
-                  <td className="py-3 px-4">{user.totalTicketsBought}</td>
+                  <td className="py-3 px-4 text-gray-800">{user.name}</td>
+                  <td className="py-3 px-4 text-gray-800">{user.email}</td>
+                  <td className="py-3 px-4 text-gray-800">{user.dateJoined}</td>
+                  <td className="py-3 px-4 text-gray-800">{user.totalTicketsBought}</td>
                   <td className="py-3 px-4">
                     <button className="text-blue-600 hover:underline mr-3">View</button>
                     <span className="text-gray-400">/ </span>

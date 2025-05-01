@@ -95,11 +95,27 @@ const AdminLayout = ({
             })}
           </ul>
         </nav>
+        
+        {/* Logout Button */}
+        <div className="p-4 mt-auto">
+          <Button 
+            variant="ghost" 
+            className="w-full flex items-center justify-center text-gray-300 hover:bg-ticketeer-purple-dark hover:text-white"
+            onClick={handleLogout}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Log Out
+          </Button>
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         <main className="flex-1 p-6 bg-white">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+          </div>
+          
           {/* Header Actions */}
           {showActions && (
             <div className="flex justify-between mb-6">
@@ -134,8 +150,8 @@ const AdminLayout = ({
         
         {/* Footer */}
         <footer className="bg-ticketeer-purple-darker py-4">
-          <div className="container mx-auto px-6">
-            {/* Empty footer for now */}
+          <div className="container mx-auto px-6 text-center">
+            <p className="text-gray-400 text-sm">© 2025 Ticketeer Admin Panel. All rights reserved.</p>
           </div>
         </footer>
       </div>

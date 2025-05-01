@@ -41,7 +41,7 @@ const AdminSettings = () => {
     <AdminLayout title="Admin Settings">
       <div className="space-y-6">
         <div className="bg-gray-100 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Edit Admin Profile</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Edit Admin Profile</h2>
           
           <div className="space-y-4 max-w-xl">
             <div>
@@ -51,7 +51,7 @@ const AdminSettings = () => {
                 placeholder="Update Name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full"
+                className="w-full text-gray-800"
               />
             </div>
             
@@ -63,7 +63,7 @@ const AdminSettings = () => {
                 placeholder="Update Email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full"
+                className="w-full text-gray-800"
               />
             </div>
             
@@ -75,7 +75,7 @@ const AdminSettings = () => {
                 placeholder="Change Password"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full"
+                className="w-full text-gray-800"
               />
             </div>
             
@@ -88,24 +88,24 @@ const AdminSettings = () => {
         </div>
         
         <div className="bg-gray-100 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">Manage Admin</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Manage Admin</h2>
           
           <div className="overflow-x-auto bg-white">
             <table className="min-w-full border-collapse">
               <thead>
                 <tr>
-                  <th className="py-3 px-4 text-left font-medium">Name</th>
-                  <th className="py-3 px-4 text-left font-medium">Email</th>
-                  <th className="py-3 px-4 text-left font-medium">Role</th>
-                  <th className="py-3 px-4 text-left font-medium">Actions</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-700">Name</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-700">Email</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-700">Role</th>
+                  <th className="py-3 px-4 text-left font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {adminUsers.map((admin) => (
                   <tr key={admin.id} className="border-b">
-                    <td className="py-3 px-4">{admin.name}</td>
-                    <td className="py-3 px-4">{admin.email}</td>
-                    <td className="py-3 px-4">{admin.role}</td>
+                    <td className="py-3 px-4 text-gray-800">{admin.name}</td>
+                    <td className="py-3 px-4 text-gray-800">{admin.email}</td>
+                    <td className="py-3 px-4 text-gray-800">{admin.role}</td>
                     <td className="py-3 px-4">
                       <button className="text-blue-600 hover:underline mr-1">Edit Role</button>
                       <span className="text-gray-400">/ </span>
