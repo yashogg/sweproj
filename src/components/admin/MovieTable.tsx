@@ -56,11 +56,11 @@ const MovieTable = ({
       <table className="min-w-full border-collapse">
         <thead className="border-b">
           <tr>
-            <th className="py-3 px-4 text-left font-medium">Movie Title</th>
-            <th className="py-3 px-4 text-left font-medium">Status</th>
-            <th className="py-3 px-4 text-left font-medium">Release Date</th>
-            <th className="py-3 px-4 text-left font-medium">Showtime</th>
-            <th className="py-3 px-4 text-left font-medium">Actions</th>
+            <th className="py-3 px-4 text-left font-medium text-gray-800">Movie Title</th>
+            <th className="py-3 px-4 text-left font-medium text-gray-800">Status</th>
+            <th className="py-3 px-4 text-left font-medium text-gray-800">Release Date</th>
+            <th className="py-3 px-4 text-left font-medium text-gray-800">Showtime</th>
+            <th className="py-3 px-4 text-left font-medium text-gray-800">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -70,14 +70,14 @@ const MovieTable = ({
             
             return (
               <tr key={movie.id} className="border-b">
-                <td className="py-3 px-4 font-medium">{movie.title}</td>
+                <td className="py-3 px-4 font-medium text-gray-800">{movie.title}</td>
                 <td className="py-3 px-4">
                   <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(movie.status)}`}>
                     {movie.status}
                   </span>
                 </td>
-                <td className="py-3 px-4">{releaseDate}</td>
-                <td className="py-3 px-4">{formatShowtimes(movie.showtimes)}</td>
+                <td className="py-3 px-4 text-gray-800">{releaseDate}</td>
+                <td className="py-3 px-4 text-gray-800">{formatShowtimes(movie.showtimes)}</td>
                 <td className="py-3 px-4">
                   <button 
                     className="text-blue-600 hover:underline mr-2"

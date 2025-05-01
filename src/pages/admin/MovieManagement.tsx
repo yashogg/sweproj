@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -283,7 +282,7 @@ const MovieManagement = () => {
     >
       <div className="space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Manage Movies</h1>
+          <h1 className="text-2xl font-bold text-gray-800">Manage Movies</h1>
           <Button onClick={() => navigate('/admin/movies/add')} className="bg-ticketeer-yellow hover:bg-yellow-400 text-black">
             <Plus className="w-4 h-4 mr-2" /> Add New Movie
           </Button>
@@ -295,7 +294,7 @@ const MovieManagement = () => {
             value={searchTerm}
             onChange={handleSearchInputChange}
             placeholder="Search movies..."
-            className="border rounded-l px-4 py-2 w-64"
+            className="border rounded-l px-4 py-2 w-64 text-gray-800"
           />
           <Button type="submit" className="rounded-l-none">Search</Button>
         </form>
