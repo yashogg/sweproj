@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Film, Ticket, Users, Settings, Search, Plus, LogOut } from 'lucide-react';
+import { LayoutDashboard, Film, Users, Settings, Search, Plus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -47,7 +47,6 @@ const AdminLayout = ({
   const menuItems = [
     { path: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/admin/movies', label: 'Movie Management', icon: Film },
-    { path: '/admin/tickets', label: 'Ticket Report', icon: Ticket },
     { path: '/admin/users', label: 'User Management', icon: Users },
     { path: '/admin/settings', label: 'Admin Settings', icon: Settings }
   ];

@@ -20,7 +20,6 @@ import TicketConfirmation from "./pages/TicketConfirmation";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
 import MovieManagement from "./pages/admin/MovieManagement";
-import TicketReport from "./pages/admin/TicketReport";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AddMovie from "./pages/admin/AddMovie";
@@ -61,7 +60,6 @@ const App = () => (
             <Route path="/admin/movies" element={<MovieManagement />} />
             <Route path="/admin/movies/add" element={<AddMovie />} />
             <Route path="/admin/movies/edit/:id" element={<EditMovie />} />
-            <Route path="/admin/tickets" element={<TicketReport />} />
             <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             
