@@ -112,7 +112,7 @@ const TicketConfirmation = () => {
                   alt={ticket.movieTitle} 
                   className="w-full rounded-md shadow"
                 />
-                <h3 className="font-bold text-lg mt-4">{ticket.movieTitle}</h3>
+                <h3 className="font-bold text-lg mt-4 text-gray-800">{ticket.movieTitle}</h3>
                 <div className="flex items-center text-sm text-gray-600 mt-2">
                   <Calendar className="w-4 h-4 mr-1" />
                   {formatDate(ticket.date)}
@@ -132,18 +132,18 @@ const TicketConfirmation = () => {
                 <div className="border rounded-lg p-6">
                   <div className="flex justify-between mb-4">
                     <div>
-                      <h4 className="font-semibold">Seats</h4>
-                      <p className="text-2xl font-bold mt-1">{ticket.seats.join(', ')}</p>
+                      <h4 className="font-semibold text-gray-800">Seats</h4>
+                      <p className="text-2xl font-bold mt-1 text-gray-800">{ticket.seats.join(', ')}</p>
                     </div>
                     <div className="text-right">
-                      <h4 className="font-semibold">Total Amount</h4>
-                      <p className="text-2xl font-bold mt-1">${ticket.amount}</p>
+                      <h4 className="font-semibold text-gray-800">Total Amount</h4>
+                      <p className="text-2xl font-bold mt-1 text-gray-800">${ticket.amount}</p>
                     </div>
                   </div>
                   
                   <Separator className="my-4" />
                   
-                  <div className="space-y-2">
+                  <div className="space-y-2 text-gray-800">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Ticket ID</span>
                       <span className="font-medium">{ticket.id}</span>
@@ -162,7 +162,7 @@ const TicketConfirmation = () => {
                   
                   {/* Barcode */}
                   <div className="mt-6 text-center">
-                    <h4 className="font-semibold mb-4">Present this barcode at the theater</h4>
+                    <h4 className="font-semibold mb-4 text-gray-800">Present this barcode at the theater</h4>
                     <div className="bg-gray-100 p-4 rounded-lg mb-3">
                       {/* Barcode Image - In a real app, you would generate an actual barcode or QR code */}
                       <div className="bg-white py-6 px-4">
@@ -179,7 +179,7 @@ const TicketConfirmation = () => {
                           <div className="h-16 w-1 bg-black"></div>
                         </div>
                       </div>
-                      <p className="mt-2 text-sm font-mono">{ticket.barcode}</p>
+                      <p className="mt-2 text-sm font-mono text-gray-800">{ticket.barcode}</p>
                     </div>
                   </div>
                 </div>
