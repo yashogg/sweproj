@@ -240,7 +240,7 @@ const Checkout = () => {
                       <Lock className="h-5 w-5 mr-2 text-green-600" />
                       Secure Payment
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-gray-600">
                       All transactions are secure and encrypted
                     </CardDescription>
                   </CardHeader>
@@ -347,7 +347,7 @@ const Checkout = () => {
                             className="mt-1 text-gray-800"
                             required
                           />
-                          <p className="text-sm text-gray-500 mt-2">
+                          <p className="text-sm text-gray-600 mt-2">
                             You'll be redirected to {paymentMethod === 'paypal' ? 'PayPal' : 'Venmo'} to complete your payment.
                           </p>
                         </div>
@@ -357,8 +357,8 @@ const Checkout = () => {
                       <Accordion type="single" collapsible className="mt-6">
                         <AccordionItem value="security">
                           <AccordionTrigger className="text-gray-800">Security Information</AccordionTrigger>
-                          <AccordionContent>
-                            <p className="text-sm text-gray-600">
+                          <AccordionContent className="text-gray-600">
+                            <p className="text-sm">
                               Your payment information is encrypted and securely transmitted. We do not store your full credit card details and use industry-standard security protocols.
                             </p>
                           </AccordionContent>
