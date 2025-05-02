@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -175,7 +174,7 @@ const Checkout = () => {
     return (
       <Layout title="Checkout">
         <div className="container mx-auto py-12 px-4">
-          <p className="text-center text-gray-800">Loading booking details...</p>
+          <p className="text-center text-white">Loading booking details...</p>
         </div>
       </Layout>
     );
@@ -193,19 +192,19 @@ const Checkout = () => {
               <div className="md:col-span-1">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-gray-800">Order Summary</CardTitle>
+                    <CardTitle className="text-white">Order Summary</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <h3 className="font-bold text-lg mb-1 text-gray-800">{bookingDetails.movieTitle}</h3>
-                      <p className="text-gray-600">
+                      <h3 className="font-bold text-lg mb-1 text-white">{bookingDetails.movieTitle}</h3>
+                      <p className="text-gray-300">
                         {bookingDetails.theater} Theater
                       </p>
                     </div>
                     
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Date:</span>
-                      <span className="font-medium text-gray-800">{new Date(bookingDetails.date).toLocaleDateString('en-US', {
+                      <span className="text-gray-300">Date:</span>
+                      <span className="font-medium text-white">{new Date(bookingDetails.date).toLocaleDateString('en-US', {
                         weekday: 'short',
                         month: 'short',
                         day: 'numeric'
@@ -213,18 +212,18 @@ const Checkout = () => {
                     </div>
                     
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Showtime:</span>
-                      <span className="font-medium text-gray-800">{bookingDetails.showtime}</span>
+                      <span className="text-gray-300">Showtime:</span>
+                      <span className="font-medium text-white">{bookingDetails.showtime}</span>
                     </div>
                     
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Tickets:</span>
-                      <span className="font-medium text-gray-800">{bookingDetails.seats} x ${bookingDetails.ticketPrice.toFixed(2)}</span>
+                      <span className="text-gray-300">Tickets:</span>
+                      <span className="font-medium text-white">{bookingDetails.seats} x ${bookingDetails.ticketPrice.toFixed(2)}</span>
                     </div>
 
                     <Separator />
                     
-                    <div className="flex justify-between font-bold text-gray-800">
+                    <div className="flex justify-between font-bold text-white">
                       <span>Total:</span>
                       <span>${bookingDetails.totalAmount}</span>
                     </div>
@@ -236,11 +235,11 @@ const Checkout = () => {
               <div className="md:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center text-gray-800">
+                    <CardTitle className="flex items-center text-white">
                       <Lock className="h-5 w-5 mr-2 text-green-600" />
                       Secure Payment
                     </CardTitle>
-                    <CardDescription className="text-gray-600">
+                    <CardDescription className="text-gray-300">
                       All transactions are secure and encrypted
                     </CardDescription>
                   </CardHeader>
@@ -249,7 +248,7 @@ const Checkout = () => {
                     <form onSubmit={handleSubmit}>
                       {/* Payment Method Selection */}
                       <div className="mb-6">
-                        <Label className="mb-2 block text-gray-800">Payment Method</Label>
+                        <Label className="mb-2 block text-white">Payment Method</Label>
                         <RadioGroup
                           value={paymentMethod}
                           onValueChange={handlePaymentMethodChange}
@@ -257,7 +256,7 @@ const Checkout = () => {
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="creditCard" id="creditCard" />
-                            <Label htmlFor="creditCard" className="flex items-center text-gray-800">
+                            <Label htmlFor="creditCard" className="flex items-center text-white">
                               <CreditCard className="h-4 w-4 mr-2" />
                               Credit Card
                             </Label>
@@ -265,12 +264,12 @@ const Checkout = () => {
                           
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="paypal" id="paypal" />
-                            <Label htmlFor="paypal" className="text-gray-800">PayPal</Label>
+                            <Label htmlFor="paypal" className="text-white">PayPal</Label>
                           </div>
                           
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="venmo" id="venmo" />
-                            <Label htmlFor="venmo" className="text-gray-800">Venmo</Label>
+                            <Label htmlFor="venmo" className="text-white">Venmo</Label>
                           </div>
                         </RadioGroup>
                       </div>
@@ -279,53 +278,53 @@ const Checkout = () => {
                       {paymentMethod === 'creditCard' && (
                         <div className="space-y-4">
                           <div>
-                            <Label htmlFor="cardNumber" className="text-gray-800">Card Number</Label>
+                            <Label htmlFor="cardNumber" className="text-white">Card Number</Label>
                             <Input
                               id="cardNumber"
                               name="cardNumber"
                               placeholder="1234 5678 9012 3456"
                               value={formData.cardNumber}
                               onChange={handleInputChange}
-                              className="mt-1 text-gray-800"
+                              className="mt-1 text-white"
                               required
                             />
                           </div>
                           
                           <div>
-                            <Label htmlFor="cardName" className="text-gray-800">Cardholder Name</Label>
+                            <Label htmlFor="cardName" className="text-white">Cardholder Name</Label>
                             <Input
                               id="cardName"
                               name="cardName"
                               placeholder="John Smith"
                               value={formData.cardName}
                               onChange={handleInputChange}
-                              className="mt-1 text-gray-800"
+                              className="mt-1 text-white"
                               required
                             />
                           </div>
                           
                           <div className="grid grid-cols-2 gap-4">
                             <div>
-                              <Label htmlFor="expiry" className="text-gray-800">Expiration Date</Label>
+                              <Label htmlFor="expiry" className="text-white">Expiration Date</Label>
                               <Input
                                 id="expiry"
                                 name="expiry"
                                 placeholder="MM/YY"
                                 value={formData.expiry}
                                 onChange={handleInputChange}
-                                className="mt-1 text-gray-800"
+                                className="mt-1 text-white"
                                 required
                               />
                             </div>
                             <div>
-                              <Label htmlFor="cvv" className="text-gray-800">CVV</Label>
+                              <Label htmlFor="cvv" className="text-white">CVV</Label>
                               <Input
                                 id="cvv"
                                 name="cvv"
                                 placeholder="123"
                                 value={formData.cvv}
                                 onChange={handleInputChange}
-                                className="mt-1 text-gray-800"
+                                className="mt-1 text-white"
                                 required
                               />
                             </div>
@@ -336,7 +335,7 @@ const Checkout = () => {
                       {/* PayPal / Venmo Fields */}
                       {(paymentMethod === 'paypal' || paymentMethod === 'venmo') && (
                         <div>
-                          <Label htmlFor="email" className="text-gray-800">Email Address</Label>
+                          <Label htmlFor="email" className="text-white">Email Address</Label>
                           <Input
                             id="email"
                             name="email"
@@ -344,10 +343,10 @@ const Checkout = () => {
                             placeholder="you@example.com"
                             value={formData.email}
                             onChange={handleInputChange}
-                            className="mt-1 text-gray-800"
+                            className="mt-1 text-white"
                             required
                           />
-                          <p className="text-sm text-gray-600 mt-2">
+                          <p className="text-sm text-gray-300 mt-2">
                             You'll be redirected to {paymentMethod === 'paypal' ? 'PayPal' : 'Venmo'} to complete your payment.
                           </p>
                         </div>
@@ -356,8 +355,8 @@ const Checkout = () => {
                       {/* Security Info */}
                       <Accordion type="single" collapsible className="mt-6">
                         <AccordionItem value="security">
-                          <AccordionTrigger className="text-gray-800">Security Information</AccordionTrigger>
-                          <AccordionContent className="text-gray-600">
+                          <AccordionTrigger className="text-white">Security Information</AccordionTrigger>
+                          <AccordionContent className="text-gray-300">
                             <p className="text-sm">
                               Your payment information is encrypted and securely transmitted. We do not store your full credit card details and use industry-standard security protocols.
                             </p>
@@ -371,13 +370,14 @@ const Checkout = () => {
                     <Button
                       variant="outline"
                       onClick={() => navigate('/movies/' + bookingDetails.movieId)}
+                      className="text-white border-white hover:text-white"
                     >
                       Back
                     </Button>
                     <Button 
                       onClick={handleSubmit}
                       disabled={isProcessing}
-                      className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark"
+                      className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark text-white"
                     >
                       {isProcessing ? (
                         <span className="flex items-center">
