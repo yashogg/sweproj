@@ -85,11 +85,11 @@ const OrderHistory = () => {
               {orders
                 .sort((a, b) => new Date(b.order_date).getTime() - new Date(a.order_date).getTime())
                 .map((order) => {
-                  const movieTitle = order.showtimes?.movies?.title || "Unknown Movie";
-                  const theaterName = order.showtimes?.theaters?.name || "Unknown Theater";
+                  const movieTitle = order.showtime?.movies?.title || "Unknown Movie";
+                  const theaterName = order.showtime?.theaters?.name || "Unknown Theater";
                   const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
-                  const showDate = order.showtimes?.date || new Date().toISOString().split('T')[0];
-                  const showTime = order.showtimes?.time || "00:00";
+                  const showDate = order.showtime?.date || new Date().toISOString().split('T')[0];
+                  const showTime = order.showtime?.time || "00:00";
                   
                   // Generate placeholder seats (in a real app, these would be stored in the database)
                   const seatsList = [...Array(order.seats)].map((_, i) => 

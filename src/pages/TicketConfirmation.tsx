@@ -1,4 +1,3 @@
-
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
@@ -71,11 +70,11 @@ const TicketConfirmation = () => {
         }
 
         // Transform order into ticket details
-        const movieTitle = order.showtimes?.movies?.title || "Unknown Movie";
-        const theaterName = order.showtimes?.theaters?.name || "Unknown Theater";
+        const movieTitle = order.showtime?.movies?.title || "Unknown Movie";
+        const theaterName = order.showtime?.theaters?.name || "Unknown Theater";
         const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
-        const showDate = order.showtimes?.date || new Date().toISOString().split('T')[0];
-        const showTime = order.showtimes?.time || "00:00";
+        const showDate = order.showtime?.date || new Date().toISOString().split('T')[0];
+        const showTime = order.showtime?.time || "00:00";
         
         // Generate placeholder seats (in a real app, these would be stored in the database)
         const seatsList = [...Array(order.seats)].map((_, i) => 
@@ -93,7 +92,7 @@ const TicketConfirmation = () => {
           amount: order.total_amount.toString(),
           barcode: 'T' + order.id.substring(0, 6) + 'R' + Math.floor(1000 + Math.random() * 9000),
           purchaseDate: order.order_date,
-          poster: order.showtimes?.movies?.image_path
+          poster: order.showtime?.movies?.image_path
         };
 
         setTicket(ticketData);

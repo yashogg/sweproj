@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -41,7 +42,7 @@ interface BookingDetails {
   seats: number;
   ticketPrice: number;
   totalAmount: string;
-  showtimeId: string;  // Added showtimeId
+  showtimeId: string;
 }
 
 const Checkout = () => {
@@ -137,13 +138,13 @@ const Checkout = () => {
         throw new Error("Missing booking details or user information");
       }
 
-      // Create order in database
+      // Create order in database with the correct payment_status type
       const order = {
         user_id: user.id,
         showtime_id: bookingDetails.showtimeId,
         seats: bookingDetails.seats,
         total_amount: parseFloat(bookingDetails.totalAmount),
-        payment_status: 'Completed'
+        payment_status: 'Completed' as 'Completed' | 'Pending' | 'Failed'
       };
 
       const createdOrder = await createOrder(order);
