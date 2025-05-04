@@ -5,11 +5,11 @@ import { Badge } from '@/components/ui/badge';
 import RatingCircle from './RatingCircle';
 
 interface MovieCardWithStatusProps {
-  id: string; // Changed from number to string to match Supabase data
+  id: string;
   title: string;
   imagePath: string;
   rating: number;
-  status: 'Now Playing' | 'Upcoming';
+  status: 'Now Playing' | 'Upcoming' | 'Finished';
 }
 
 const MovieCardWithStatus = ({ id, title, imagePath, rating, status }: MovieCardWithStatusProps) => {
@@ -29,7 +29,9 @@ const MovieCardWithStatus = ({ id, title, imagePath, rating, status }: MovieCard
             className={`absolute top-2 right-2 ${
               status === 'Now Playing' 
                 ? 'bg-green-600 hover:bg-green-700' 
-                : 'bg-blue-600 hover:bg-blue-700'
+                : status === 'Upcoming'
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'bg-gray-600 hover:bg-gray-700'
             }`}
           >
             {status}

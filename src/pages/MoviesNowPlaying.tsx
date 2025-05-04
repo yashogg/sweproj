@@ -4,14 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
 import MovieCardWithStatus from '@/components/MovieCardWithStatus';
 import { getNowPlayingMovies } from '@/services/movie-service';
-
-interface Movie {
-  id: string;
-  title: string;
-  image_path: string | null;
-  rating: number | null;
-  status: 'Now Playing' | 'Upcoming';
-}
+import { Movie } from '@/services/supabase-types';
 
 const MoviesNowPlaying = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
