@@ -70,8 +70,8 @@ const TicketConfirmation = () => {
         }
 
         // Transform order into ticket details
-        const movieTitle = order.showtime?.movies?.title || "Unknown Movie";
-        const theaterName = order.showtime?.theaters?.name || "Unknown Theater";
+        const movieTitle = order.showtime?.movie?.title || "Unknown Movie";
+        const theaterName = order.showtime?.theater?.name || "Unknown Theater";
         const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
         const showDate = order.showtime?.date || new Date().toISOString().split('T')[0];
         const showTime = order.showtime?.time || "00:00";
@@ -92,7 +92,7 @@ const TicketConfirmation = () => {
           amount: order.total_amount.toString(),
           barcode: 'T' + order.id.substring(0, 6) + 'R' + Math.floor(1000 + Math.random() * 9000),
           purchaseDate: order.order_date,
-          poster: order.showtime?.movies?.image_path
+          poster: order.showtime?.movie?.image_path
         };
 
         setTicket(ticketData);

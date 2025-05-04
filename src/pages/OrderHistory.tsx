@@ -85,8 +85,8 @@ const OrderHistory = () => {
               {orders
                 .sort((a, b) => new Date(b.order_date).getTime() - new Date(a.order_date).getTime())
                 .map((order) => {
-                  const movieTitle = order.showtime?.movies?.title || "Unknown Movie";
-                  const theaterName = order.showtime?.theaters?.name || "Unknown Theater";
+                  const movieTitle = order.showtime?.movie?.title || "Unknown Movie";
+                  const theaterName = order.showtime?.theater?.name || "Unknown Theater";
                   const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
                   const showDate = order.showtime?.date || new Date().toISOString().split('T')[0];
                   const showTime = order.showtime?.time || "00:00";
