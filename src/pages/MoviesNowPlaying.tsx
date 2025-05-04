@@ -10,6 +10,7 @@ interface Movie {
   title: string;
   image_path: string | null;
   rating: number | null;
+  status: 'Now Playing' | 'Upcoming';
 }
 
 const MoviesNowPlaying = () => {
@@ -66,7 +67,7 @@ const MoviesNowPlaying = () => {
                 id={movie.id}
                 title={movie.title}
                 imagePath={movie.image_path || '/placeholder.svg'}
-                rating={movie.rating || undefined}
+                rating={movie.rating || 0}
                 status="Now Playing"
               />
             ))}

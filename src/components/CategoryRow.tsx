@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import MovieCard from './MovieCard';
 
 interface Movie {
-  id: number;
+  id: string; // Changed from number to string to match Supabase data
   title: string;
   imagePath?: string;
   rating?: number;

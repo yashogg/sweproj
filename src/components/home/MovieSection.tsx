@@ -5,7 +5,7 @@ import { ChevronRight } from 'lucide-react';
 import MovieCard from '@/components/MovieCard';
 
 interface Movie {
-  id: number;
+  id: string; // Changed from number to string to match Supabase data
   title: string;
   imagePath?: string;
   rating?: number;

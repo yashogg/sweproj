@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -30,6 +29,7 @@ interface MovieDetails {
   status: string;
   release_date: string | null;
   rating: number | null;
+  duration: number | null; // Added duration field
 }
 
 const EditMovie = () => {
@@ -45,7 +45,8 @@ const EditMovie = () => {
     image_path: '',
     status: '',
     release_date: '',
-    rating: 0
+    rating: 0,
+    duration: 120 // Added default duration
   });
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -64,8 +65,8 @@ const EditMovie = () => {
   };
   
   // Map form status to DB status
-  const mapFormStatusToDbStatus = (formStatus: string): string => {
-    const statusMap: Record<string, string> = {
+  const mapFormStatusToDbStatus = (formStatus: string): 'Now Playing' | 'Upcoming' | 'Finished' => {
+    const statusMap: Record<string, 'Now Playing' | 'Upcoming' | 'Finished'> = {
       'nowPlaying': 'Now Playing',
       'upcoming': 'Upcoming',
       'finished': 'Finished'
@@ -94,7 +95,8 @@ const EditMovie = () => {
             image_path: movie.image_path,
             status: mapStatusToFormStatus(movie.status),
             release_date: movie.release_date || new Date().toISOString().split('T')[0],
-            rating: movie.rating || 0
+            rating: movie.rating || 0,
+            duration: movie.duration || 120 // Added default duration
           });
           
           if (movie.image_path) {
@@ -252,7 +254,8 @@ const EditMovie = () => {
         release_date: formData.release_date,
         rating: typeof formData.rating === 'string' 
                 ? parseFloat(formData.rating) 
-                : formData.rating
+                : formData.rating,
+        duration: formData.duration // Added duration field
       };
       
       await updateMovie(id!, movieData);
@@ -448,6 +451,22 @@ const EditMovie = () => {
                   )}
                 </div>
               </div>
+            </div>
+            
+            {/* Add duration field */}
+            <div>
+              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                Duration (minutes)
+              </label>
+              <Input
+                id="duration"
+                name="duration"
+                type="number"
+                min="1"
+                value={formData.duration || ''}
+                onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || null})}
+                className="w-full"
+              />
             </div>
           </div>
           

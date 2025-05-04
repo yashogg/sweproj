@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from '@/components/layout/AdminLayout';
@@ -31,7 +30,8 @@ const AddMovie = () => {
     status: '',
     releaseDate: '',
     showtime: '',
-    rating: 5.0
+    rating: 5.0,
+    duration: 120 // Added default duration to match the required type
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -174,7 +174,7 @@ const AddMovie = () => {
       }
       
       // 2. Map form status to database status format
-      const statusMap: Record<string, string> = {
+      const statusMap: Record<string, 'Now Playing' | 'Upcoming' | 'Finished'> = {
         'nowPlaying': 'Now Playing',
         'upcoming': 'Upcoming',
         'finished': 'Finished'
@@ -189,7 +189,8 @@ const AddMovie = () => {
         image_path: imageUrl,
         status: statusMap[formData.status] || 'Upcoming',
         release_date: formData.releaseDate,
-        rating: parseFloat(formData.rating.toString())
+        rating: parseFloat(formData.rating.toString()),
+        duration: formData.duration // Added duration field
       };
       
       const newMovie = await addMovie(movieData);
@@ -376,6 +377,22 @@ const AddMovie = () => {
               <p className="text-xs text-gray-500 mt-1">
                 You can add more showtimes after creating the movie
               </p>
+            </div>
+            
+            {/* Add duration field */}
+            <div>
+              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                Duration (minutes)
+              </label>
+              <Input
+                id="duration"
+                name="duration"
+                type="number"
+                min="1"
+                value={formData.duration}
+                onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value) || 0})}
+                className="w-full"
+              />
             </div>
           </div>
           

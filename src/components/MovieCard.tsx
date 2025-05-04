@@ -3,7 +3,7 @@ import { Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MovieCardProps {
-  id: number;
+  id: string; // Changed from number to string to match Supabase data
   title: string;
   imagePath?: string;
   rating?: number;

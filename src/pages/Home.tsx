@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { getNowPlayingMovies, getUpcomingMovies } from '@/services/movie-service';
 
 interface Movie {
-  id: string;
+  id: string; // Changed to string to match Supabase
   title: string;
   image_path: string | null;
   rating: number | null;
