@@ -9,13 +9,235 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      movies: {
+        Row: {
+          cast_members: string | null
+          created_at: string
+          description: string | null
+          duration: number | null
+          genre: string | null
+          id: string
+          image_path: string | null
+          rating: number | null
+          release_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          cast_members?: string | null
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          image_path?: string | null
+          rating?: number | null
+          release_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          cast_members?: string | null
+          created_at?: string
+          description?: string | null
+          duration?: number | null
+          genre?: string | null
+          id?: string
+          image_path?: string | null
+          rating?: number | null
+          release_date?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          id: string
+          order_date: string
+          payment_status: string | null
+          seats: number
+          showtime_id: string
+          total_amount: number
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          order_date?: string
+          payment_status?: string | null
+          seats: number
+          showtime_id: string
+          total_amount: number
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          order_date?: string
+          payment_status?: string | null
+          seats?: number
+          showtime_id?: string
+          total_amount?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_showtime_id_fkey"
+            columns: ["showtime_id"]
+            isOneToOne: false
+            referencedRelation: "showtimes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          movie_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          movie_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          movie_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      showtimes: {
+        Row: {
+          available_seats: number
+          created_at: string
+          date: string
+          id: string
+          movie_id: string
+          price: number
+          theater_id: string
+          time: string
+        }
+        Insert: {
+          available_seats: number
+          created_at?: string
+          date: string
+          id?: string
+          movie_id: string
+          price?: number
+          theater_id: string
+          time: string
+        }
+        Update: {
+          available_seats?: number
+          created_at?: string
+          date?: string
+          id?: string
+          movie_id?: string
+          price?: number
+          theater_id?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "showtimes_movie_id_fkey"
+            columns: ["movie_id"]
+            isOneToOne: false
+            referencedRelation: "movies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "showtimes_theater_id_fkey"
+            columns: ["theater_id"]
+            isOneToOne: false
+            referencedRelation: "theaters"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      theaters: {
+        Row: {
+          created_at: string
+          id: string
+          location: string
+          name: string
+          seats_capacity: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location: string
+          name: string
+          seats_capacity?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string
+          name?: string
+          seats_capacity?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
