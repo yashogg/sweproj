@@ -10,7 +10,7 @@ import { Lock, LogIn } from 'lucide-react';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isAdmin } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -35,26 +35,24 @@ const AdminLogin = () => {
       return;
     }
 
-    // For demo purposes, only allow admin@ticketeer.com/admin
-    if (formData.email !== 'admin@ticketeer.com' || formData.password !== 'admin') {
-      toast({
-        title: "Access Denied",
-        description: "Invalid admin credentials.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     try {
       setIsLoading(true);
       await login(formData.email, formData.password);
       
-      toast({
-        title: "Welcome Admin",
-        description: "You have successfully logged in to the admin panel.",
-      });
-      
-      navigate('/admin');
+      // Check if the user is an admin after login
+      if (isAdmin) {
+        toast({
+          title: "Welcome Admin",
+          description: "You have successfully logged in to the admin panel.",
+        });
+        navigate('/admin');
+      } else {
+        toast({
+          title: "Access Denied",
+          description: "This account does not have admin privileges.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
         title: "Login failed",
@@ -64,6 +62,14 @@ const AdminLogin = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Fill in demo credentials
+  const fillDemoCredentials = () => {
+    setFormData({
+      email: 'admin@ticketeer.com',
+      password: 'admin'
+    });
   };
 
   return (
@@ -133,9 +139,17 @@ const AdminLogin = () => {
                 )}
               </Button>
               
-              <div className="text-center text-sm">
+              <div className="text-center">
+                <Button 
+                  type="button" 
+                  variant="link" 
+                  className="text-ticketeer-yellow text-sm"
+                  onClick={fillDemoCredentials}
+                >
+                  Fill Demo Credentials
+                </Button>
                 <p className="text-gray-400 mt-1">
-                  Demo credentials: <code>admin@ticketeer.com</code> / <code>admin</code>
+                  Use <code>admin@ticketeer.com</code> / <code>admin</code>
                 </p>
               </div>
             </form>

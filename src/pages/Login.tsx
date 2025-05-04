@@ -28,6 +28,14 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // Fill in demo credentials
+  const fillDemoCredentials = () => {
+    setFormData({
+      email: 'admin@ticketeer.com',
+      password: 'admin'
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -137,7 +145,14 @@ const Login = () => {
 
             {/* Admin login hint */}
             <div className="mt-8 pt-4 border-t border-gray-700 text-xs text-gray-400 text-center">
-              <p>Demo credentials:</p>
+              <Button 
+                type="button" 
+                variant="link" 
+                className="text-ticketeer-yellow text-sm"
+                onClick={fillDemoCredentials}
+              >
+                Fill Demo Credentials
+              </Button>
               <p>Email: admin@ticketeer.com</p>
               <p>Password: admin</p>
             </div>

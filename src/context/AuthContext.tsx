@@ -142,6 +142,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: "Your account has been created. Welcome to Ticketeer!",
       });
       
+      // For demonstration purposes, let's manually set the user profile for the admin account
+      if (email === 'admin@ticketeer.com') {
+        setTimeout(async () => {
+          try {
+            if (data.user) {
+              await updateUserProfile(data.user.id, {
+                id: data.user.id,
+                name,
+                email,
+                phone,
+                address,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+              console.log('Admin profile created successfully');
+            }
+          } catch (error) {
+            console.error('Error creating admin profile:', error);
+          }
+        }, 1000);
+      }
+      
     } catch (error) {
       console.error('Registration error:', error);
       throw error;

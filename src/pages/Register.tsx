@@ -22,6 +22,18 @@ const Register = () => {
     confirmPassword: ''
   });
 
+  // Function to fill admin details for quick testing
+  const fillAdminDetails = () => {
+    setFormData({
+      name: 'Admin User',
+      email: 'admin@ticketeer.com',
+      phone: '555-123-4567',
+      address: 'Admin Office',
+      password: 'admin',
+      confirmPassword: 'admin'
+    });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -58,7 +70,6 @@ const Register = () => {
     try {
       setIsLoading(true);
       
-      // Calling register with all 5 required arguments instead of 3
       await register(
         formData.name,
         formData.email, 
@@ -213,6 +224,17 @@ const Register = () => {
                   </span>
                 )}
               </Button>
+              
+              <div className="text-center">
+                <Button 
+                  type="button" 
+                  onClick={fillAdminDetails} 
+                  variant="link" 
+                  className="text-ticketeer-yellow text-sm"
+                >
+                  Fill Admin Demo Credentials
+                </Button>
+              </div>
             </form>
             
             <div className="mt-6 text-center">
