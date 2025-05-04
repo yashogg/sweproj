@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { createOrder } from '@/services/order-service';
 import {
   Card,
   CardContent,
@@ -39,11 +41,13 @@ interface BookingDetails {
   seats: number;
   ticketPrice: number;
   totalAmount: string;
+  showtimeId: string;  // Added showtimeId
 }
 
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState("creditCard");
   const [isProcessing, setIsProcessing] = useState(false);
   const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
@@ -57,8 +61,7 @@ const Checkout = () => {
 
   useEffect(() => {
     // Check if user is logged in
-    const storedUser = localStorage.getItem('ticketeer_user');
-    if (!storedUser) {
+    if (!user) {
       toast({
         title: "Login Required",
         description: "Please log in to proceed with checkout",
@@ -92,7 +95,7 @@ const Checkout = () => {
       });
       navigate('/');
     }
-  }, [navigate, toast]);
+  }, [navigate, toast, user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -103,7 +106,7 @@ const Checkout = () => {
     setPaymentMethod(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
@@ -129,37 +132,41 @@ const Checkout = () => {
       return;
     }
 
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsProcessing(false);
+    try {
+      if (!bookingDetails || !user) {
+        throw new Error("Missing booking details or user information");
+      }
+
+      // Create order in database
+      const order = {
+        user_id: user.id,
+        showtime_id: bookingDetails.showtimeId,
+        seats: bookingDetails.seats,
+        total_amount: parseFloat(bookingDetails.totalAmount),
+        payment_status: 'Completed'
+      };
+
+      const createdOrder = await createOrder(order);
       
-      // Generate a simple ticket ID
-      const ticketId = Math.floor(100000 + Math.random() * 900000).toString();
+      // Generate a simple ticket ID (we'll use the real order ID from the database)
+      const ticketId = createdOrder.id;
       
       // Store ticket details for the confirmation page
       const ticketDetails = {
         id: ticketId,
-        movieTitle: bookingDetails?.movieTitle,
-        theater: bookingDetails?.theater,
+        movieTitle: bookingDetails.movieTitle,
+        theater: bookingDetails.theater,
         screen: 'Screen ' + Math.floor(1 + Math.random() * 5),
-        date: bookingDetails?.date,
-        time: bookingDetails?.showtime,
-        seats: [...Array(bookingDetails?.seats)].map((_, i) => String.fromCharCode(65 + Math.floor(i/10)) + (i%10 + 1)),
-        amount: bookingDetails?.totalAmount,
-        barcode: 'T' + ticketId + 'R' + Math.floor(1000 + Math.random() * 9000),
-        purchaseDate: new Date().toISOString().split('T')[0]
+        date: bookingDetails.date,
+        time: bookingDetails.showtime,
+        seats: [...Array(bookingDetails.seats)].map((_, i) => String.fromCharCode(65 + Math.floor(i/10)) + (i%10 + 1)),
+        amount: bookingDetails.totalAmount,
+        barcode: 'T' + ticketId.substring(0, 6) + 'R' + Math.floor(1000 + Math.random() * 9000),
+        purchaseDate: new Date().toISOString(),
+        poster: '' // Could be added if we have movie poster URL
       };
       
       sessionStorage.setItem('ticketDetails', JSON.stringify(ticketDetails));
-      
-      // Save to order history (in a real app, this would be an API call)
-      const storedUser = JSON.parse(localStorage.getItem('ticketeer_user') || '{}');
-      const orderHistory = JSON.parse(localStorage.getItem(`orderHistory_${storedUser.id}`) || '[]');
-      orderHistory.push({
-        ...ticketDetails,
-        purchaseDate: new Date().toISOString()
-      });
-      localStorage.setItem(`orderHistory_${storedUser.id}`, JSON.stringify(orderHistory));
       
       toast({
         title: "Payment Successful",
@@ -167,7 +174,15 @@ const Checkout = () => {
       });
       
       navigate(`/ticket/${ticketId}`);
-    }, 2000);
+    } catch (error) {
+      console.error("Error processing order:", error);
+      toast({
+        title: "Payment Failed",
+        description: "There was an error processing your payment. Please try again.",
+        variant: "destructive"
+      });
+      setIsProcessing(false);
+    }
   };
 
   if (!bookingDetails) {

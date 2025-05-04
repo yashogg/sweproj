@@ -5,6 +5,9 @@ import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Calendar, Clock, MapPin, Download, Share2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { getOrderById } from '@/services/order-service';
+import { OrderWithDetails } from '@/services/supabase-types';
+import { useToast } from '@/hooks/use-toast';
 
 interface TicketDetails {
   id: string;
@@ -20,56 +23,94 @@ interface TicketDetails {
   poster?: string;
 }
 
-// Default ticket data as fallback
-const defaultTicket: TicketDetails = {
-  id: '123',
-  movieTitle: 'Movie Title',
-  theater: 'Theater Name',
-  screen: 'Screen 1',
-  date: '2025-05-05',
-  time: '19:30',
-  seats: ['A1', 'A2'],
-  amount: '25.98',
-  barcode: 'T1CK33TR0CK5',
-  purchaseDate: '2025-04-30',
-  poster: 'https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Movie+Poster'
-};
-
 const TicketConfirmation = () => {
   const { id } = useParams<{id: string}>();
   const navigate = useNavigate();
-  const [ticket, setTicket] = useState<TicketDetails>(defaultTicket);
+  const { toast } = useToast();
+  const [ticket, setTicket] = useState<TicketDetails | null>(null);
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // Check if user is logged in
-    const storedUser = localStorage.getItem('ticketeer_user');
-    if (!storedUser) {
-      navigate('/login');
-      return;
-    }
+    const fetchOrderDetails = async () => {
+      if (!id) {
+        toast({
+          title: "Error",
+          description: "Invalid ticket ID",
+          variant: "destructive"
+        });
+        navigate('/orders');
+        return;
+      }
 
-    // Get ticket details from session storage
-    const ticketDetailsStr = sessionStorage.getItem('ticketDetails');
-    if (ticketDetailsStr) {
+      // First try to get from session storage (for newly purchased tickets)
+      const ticketDetailsStr = sessionStorage.getItem('ticketDetails');
+      if (ticketDetailsStr) {
+        try {
+          const details = JSON.parse(ticketDetailsStr);
+          if (details.id === id) {
+            setTicket(details);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("Error parsing ticket details:", error);
+        }
+      }
+
+      // If not in session storage, fetch from database
       try {
-        const details = JSON.parse(ticketDetailsStr);
-        setTicket(details);
+        const order = await getOrderById(id);
+        if (!order) {
+          toast({
+            title: "Not Found",
+            description: "Ticket not found",
+            variant: "destructive"
+          });
+          navigate('/orders');
+          return;
+        }
+
+        // Transform order into ticket details
+        const movieTitle = order.showtimes?.movies?.title || "Unknown Movie";
+        const theaterName = order.showtimes?.theaters?.name || "Unknown Theater";
+        const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
+        const showDate = order.showtimes?.date || new Date().toISOString().split('T')[0];
+        const showTime = order.showtimes?.time || "00:00";
+        
+        // Generate placeholder seats (in a real app, these would be stored in the database)
+        const seatsList = [...Array(order.seats)].map((_, i) => 
+          String.fromCharCode(65 + Math.floor(i/10)) + (i%10 + 1)
+        );
+
+        const ticketData: TicketDetails = {
+          id: order.id,
+          movieTitle: movieTitle,
+          theater: theaterName,
+          screen: screenName,
+          date: showDate,
+          time: showTime,
+          seats: seatsList,
+          amount: order.total_amount.toString(),
+          barcode: 'T' + order.id.substring(0, 6) + 'R' + Math.floor(1000 + Math.random() * 9000),
+          purchaseDate: order.order_date,
+          poster: order.showtimes?.movies?.image_path
+        };
+
+        setTicket(ticketData);
       } catch (error) {
-        console.error("Error parsing ticket details:", error);
+        console.error("Error fetching order details:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load ticket details",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
       }
-    } else {
-      // If no ticket in session storage, try to find it in order history
-      const storedUser = JSON.parse(localStorage.getItem('ticketeer_user') || '{}');
-      const orderHistory = JSON.parse(localStorage.getItem(`orderHistory_${storedUser.id}`) || '[]');
-      const foundTicket = orderHistory.find((t: TicketDetails) => t.id === id);
-      
-      if (foundTicket) {
-        setTicket(foundTicket);
-      } else {
-        console.log(`No ticket found with ID: ${id}`);
-      }
-    }
-  }, [id, navigate]);
+    };
+
+    fetchOrderDetails();
+  }, [id, navigate, toast]);
   
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -85,6 +126,37 @@ const TicketConfirmation = () => {
   const handlePrint = () => {
     window.print();
   };
+
+  if (loading) {
+    return (
+      <Layout title="Loading Ticket" requireAuth={true}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ticketeer-purple mx-auto"></div>
+            <p className="mt-4 text-white">Loading ticket details...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <Layout title="Ticket Not Found" requireAuth={true}>
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <h2 className="text-2xl font-bold text-white mb-4">Ticket Not Found</h2>
+            <p className="text-gray-300 mb-6">
+              The ticket you're looking for could not be found. It may have been deleted or you may have entered an incorrect URL.
+            </p>
+            <Button onClick={() => navigate('/orders')} className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
+              View All Tickets
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Ticket Confirmation" requireAuth={true}>
@@ -146,7 +218,7 @@ const TicketConfirmation = () => {
                   <div className="space-y-2 text-gray-800">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Ticket ID</span>
-                      <span className="font-medium">{ticket.id}</span>
+                      <span className="font-medium">{ticket.id.substring(0, 8)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Purchase Date</span>
