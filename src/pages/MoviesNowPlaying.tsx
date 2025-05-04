@@ -1,26 +1,41 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
 import MovieCardWithStatus from '@/components/MovieCardWithStatus';
+import { getNowPlayingMovies } from '@/services/movie-service';
 
-// Sample movie data - now playing movies
-const nowPlayingMovies = [
-  { id: 1, title: "Spider-Man: No Way Home", imagePath: "https://image.tmdb.org/t/p/w300/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg", rating: 8.4 },
-  { id: 2, title: "The Batman", imagePath: "https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg", rating: 8.0 },
-  { id: 3, title: "Doctor Strange", imagePath: "https://image.tmdb.org/t/p/w300/9Gtg2DzBhmYamXBS1hKAhiwbBKS.jpg", rating: 7.9 },
-  { id: 4, title: "Black Panther: Wakanda Forever", imagePath: "https://image.tmdb.org/t/p/w300/sv1xJUazXeYqALzczSZ3O6nkH75.jpg", rating: 7.8 },
-  { id: 5, title: "Thor: Love and Thunder", imagePath: "https://image.tmdb.org/t/p/w300/pIkRyD18kl4FhoCNQuWxWu5cBLM.jpg", rating: 7.5 },
-  { id: 6, title: "Top Gun: Maverick", imagePath: "https://image.tmdb.org/t/p/w300/62HCnUTziyWcpDaBO2i1DX17ljH.jpg", rating: 8.7 },
-  { id: 7, title: "Avatar: The Way of Water", imagePath: "https://image.tmdb.org/t/p/w300/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg", rating: 8.1 },
-  { id: 8, title: "Black Adam", imagePath: "https://image.tmdb.org/t/p/w300/3zXceNTtyj5FLjwQXuPvLpK8nYr.jpg", rating: 7.2 },
-  { id: 9, title: "Ant-Man: Quantumania", imagePath: "https://image.tmdb.org/t/p/w300/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg", rating: 7.0 },
-  { id: 10, title: "Shazam! Fury of the Gods", imagePath: "https://image.tmdb.org/t/p/w300/2VK4d3mqqTc7LVZLnLPeRiPaJ71.jpg", rating: 6.9 },
-  { id: 11, title: "The Flash", imagePath: "https://image.tmdb.org/t/p/w300/rktDFPbfHfUbArZ6OOOKsXcv0Bm.jpg", rating: 7.3 },
-  { id: 12, title: "Guardians of the Galaxy Vol. 3", imagePath: "https://image.tmdb.org/t/p/w300/r2J02Z2OpNTctfOSN1Ydgii51I3.jpg", rating: 8.5 }
-];
+interface Movie {
+  id: string;
+  title: string;
+  image_path: string | null;
+  rating: number | null;
+}
 
 const MoviesNowPlaying = () => {
-  const [movies] = useState(nowPlayingMovies);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const nowPlayingMovies = await getNowPlayingMovies();
+        setMovies(nowPlayingMovies);
+      } catch (error) {
+        console.error('Error fetching now playing movies:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load movies. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMovies();
+  }, [toast]);
 
   return (
     <Layout title="Now Playing Movies">
@@ -33,40 +48,53 @@ const MoviesNowPlaying = () => {
       </div>
       
       <div className="container mx-auto px-4 py-8">
-        {/* Movies Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-          {movies.map(movie => (
-            <MovieCardWithStatus
-              key={movie.id}
-              id={movie.id}
-              title={movie.title}
-              imagePath={movie.imagePath}
-              rating={movie.rating}
-              status="Now Playing"
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ticketeer-purple"></div>
+          </div>
+        ) : movies.length === 0 ? (
+          <div className="text-center py-10">
+            <h2 className="text-xl font-medium text-gray-600">No movies currently playing</h2>
+            <p className="text-gray-500 mt-2">Check back soon for new releases!</p>
+          </div>
+        ) : (
+          /* Movies Grid */
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
+            {movies.map(movie => (
+              <MovieCardWithStatus
+                key={movie.id}
+                id={movie.id}
+                title={movie.title}
+                imagePath={movie.image_path || '/placeholder.svg'}
+                rating={movie.rating || undefined}
+                status="Now Playing"
+              />
+            ))}
+          </div>
+        )}
         
         {/* Pagination */}
-        <div className="mt-10 flex justify-center">
-          <div className="flex space-x-2">
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
-              &lt;
-            </button>
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-ticketeer-purple text-white font-bold">
-              1
-            </button>
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
-              2
-            </button>
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
-              3
-            </button>
-            <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
-              &gt;
-            </button>
+        {!loading && movies.length > 0 && (
+          <div className="mt-10 flex justify-center">
+            <div className="flex space-x-2">
+              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
+                &lt;
+              </button>
+              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-ticketeer-purple text-white font-bold">
+                1
+              </button>
+              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
+                2
+              </button>
+              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
+                3
+              </button>
+              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-200 text-gray-700">
+                &gt;
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Layout>
   );

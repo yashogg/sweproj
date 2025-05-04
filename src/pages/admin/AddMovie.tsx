@@ -14,10 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from '@/integrations/supabase/client';
+import { addMovie } from '@/services/movie-service';
+import { v4 as uuidv4 } from 'uuid';
 
 const AddMovie = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     genre: '',
@@ -61,8 +65,41 @@ const AddMovie = () => {
     setFormData({ ...formData, poster: file });
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const uploadPoster = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('movie-posters')
+        .upload(filePath, file);
+        
+      if (uploadError) {
+        console.error('Error uploading poster:', uploadError);
+        toast({
+          title: "Upload Failed",
+          description: "Could not upload movie poster",
+          variant: "destructive"
+        });
+        return null;
+      }
+      
+      // Get the public URL for the uploaded image
+      const { data } = supabase.storage
+        .from('movie-posters')
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error in upload process:', error);
+      return null;
+    }
+  };
+  
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
     // Validate inputs
     if (!formData.title || !formData.genre || !formData.description || !formData.status) {
@@ -71,6 +108,7 @@ const AddMovie = () => {
         description: "Please fill in all required fields.",
         variant: "destructive"
       });
+      setIsSubmitting(false);
       return;
     }
     
@@ -80,6 +118,7 @@ const AddMovie = () => {
         description: "Please upload a movie poster.",
         variant: "destructive"
       });
+      setIsSubmitting(false);
       return;
     }
     
@@ -90,6 +129,7 @@ const AddMovie = () => {
         description: "Please select a release date.",
         variant: "destructive"
       });
+      setIsSubmitting(false);
       return;
     }
     
@@ -103,6 +143,7 @@ const AddMovie = () => {
         description: "Currently showing movies must have a release date in the present or past.",
         variant: "destructive"
       });
+      setIsSubmitting(false);
       return;
     }
     
@@ -112,17 +153,64 @@ const AddMovie = () => {
         description: "Upcoming movies must have a future release date.",
         variant: "destructive"
       });
+      setIsSubmitting(false);
       return;
     }
     
-    // In a real app, this would save the movie data
-    toast({
-      title: "Success",
-      description: "Movie added successfully."
-    });
-    
-    // Navigate back to movie management
-    navigate('/admin/movies');
+    try {
+      // 1. Upload poster image to Supabase Storage
+      let imageUrl = null;
+      if (formData.poster) {
+        imageUrl = await uploadPoster(formData.poster);
+        if (!imageUrl) {
+          toast({
+            title: "Error",
+            description: "Failed to upload movie poster",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      }
+      
+      // 2. Map form status to database status format
+      const statusMap: Record<string, string> = {
+        'nowPlaying': 'Now Playing',
+        'upcoming': 'Upcoming',
+        'finished': 'Finished'
+      };
+      
+      // 3. Save movie data to Supabase
+      const movieData = {
+        title: formData.title,
+        genre: formData.genre,
+        description: formData.description,
+        cast_members: formData.cast || null,
+        image_path: imageUrl,
+        status: statusMap[formData.status] || 'Upcoming',
+        release_date: formData.releaseDate,
+        rating: parseFloat(formData.rating.toString())
+      };
+      
+      const newMovie = await addMovie(movieData);
+      
+      toast({
+        title: "Success",
+        description: "Movie added successfully."
+      });
+      
+      // Navigate back to movie management
+      navigate('/admin/movies');
+    } catch (error) {
+      console.error('Error saving movie:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add movie. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -292,11 +380,16 @@ const AddMovie = () => {
           </div>
           
           <div className="flex justify-end space-x-4 pt-4">
-            <Button variant="outline" type="button" onClick={() => navigate('/admin/movies')}>
+            <Button 
+              variant="outline" 
+              type="button" 
+              onClick={() => navigate('/admin/movies')}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">
-              Save Movie
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save Movie"}
             </Button>
           </div>
         </form>

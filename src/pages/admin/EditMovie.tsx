@@ -14,21 +14,22 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { getMovieById, updateMovie } from '@/components/home/MovieData';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
+import { getMovieById, updateMovie } from '@/services/movie-service';
+import { v4 as uuidv4 } from 'uuid';
 
 interface MovieDetails {
-  id: number;
+  id: string;
   title: string;
   genre: string;
   description: string;
-  cast: string;
-  posterUrl: string;
-  imagePath: string;
+  cast_members: string | null;
+  image_path: string | null;
   status: string;
-  releaseDate: string;
-  rating: number;
+  release_date: string | null;
+  rating: number | null;
 }
 
 const EditMovie = () => {
@@ -36,58 +37,93 @@ const EditMovie = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [formData, setFormData] = useState<MovieDetails>({
-    id: 0,
+    id: '',
     title: '',
     genre: '',
     description: '',
-    cast: '',
-    posterUrl: '',
-    imagePath: '',
+    cast_members: '',
+    image_path: '',
     status: '',
-    releaseDate: '',
+    release_date: '',
     rating: 0
   });
   const [loading, setLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [newPoster, setNewPoster] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Map DB status to form status
+  const mapStatusToFormStatus = (dbStatus: string): string => {
+    const statusMap: Record<string, string> = {
+      'Now Playing': 'nowPlaying',
+      'Upcoming': 'upcoming',
+      'Finished': 'finished'
+    };
+    return statusMap[dbStatus] || 'upcoming';
+  };
+  
+  // Map form status to DB status
+  const mapFormStatusToDbStatus = (formStatus: string): string => {
+    const statusMap: Record<string, string> = {
+      'nowPlaying': 'Now Playing',
+      'upcoming': 'Upcoming',
+      'finished': 'Finished'
+    };
+    return statusMap[formStatus] || 'Upcoming';
+  };
   
   useEffect(() => {
-    if (!id) {
-      setError("No movie ID provided");
-      setLoading(false);
-      return;
-    }
-    
-    const movieId = parseInt(id);
-    const movie = getMovieById(movieId);
-    
-    if (movie) {
-      setFormData({
-        id: movie.id,
-        title: movie.title,
-        genre: movie.genre || '',
-        description: movie.description || '',
-        cast: movie.cast || '',
-        posterUrl: movie.imagePath,
-        imagePath: movie.imagePath,
-        status: movie.releaseDate > new Date().toISOString().split('T')[0] ? 'upcoming' : 'nowPlaying',
-        releaseDate: movie.releaseDate || new Date().toISOString().split('T')[0],
-        rating: movie.rating || 0
-      });
+    const fetchMovie = async () => {
+      if (!id) {
+        setError("No movie ID provided");
+        setLoading(false);
+        return;
+      }
       
-      setImagePreview(movie.imagePath);
-    } else {
-      // Movie not found
-      setError("Movie not found");
-      toast({
-        title: "Error",
-        description: "Movie not found",
-        variant: "destructive"
-      });
-    }
+      try {
+        const movie = await getMovieById(id);
+        
+        if (movie) {
+          setFormData({
+            id: movie.id,
+            title: movie.title,
+            genre: movie.genre || '',
+            description: movie.description || '',
+            cast_members: movie.cast_members || '',
+            image_path: movie.image_path,
+            status: mapStatusToFormStatus(movie.status),
+            release_date: movie.release_date || new Date().toISOString().split('T')[0],
+            rating: movie.rating || 0
+          });
+          
+          if (movie.image_path) {
+            setImagePreview(movie.image_path);
+          }
+        } else {
+          // Movie not found
+          setError("Movie not found");
+          toast({
+            title: "Error",
+            description: "Movie not found",
+            variant: "destructive"
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching movie:', err);
+        setError("Error loading movie data");
+        toast({
+          title: "Error",
+          description: "Failed to load movie data",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    setLoading(false);
-  }, [id, navigate, toast]);
+    fetchMovie();
+  }, [id, toast]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -115,14 +151,34 @@ const EditMovie = () => {
     // Create a preview URL for the image
     const previewUrl = URL.createObjectURL(file);
     setImagePreview(previewUrl);
-    
-    // In a real app, you would upload this file to a server
-    // For now, just update the form data with the preview URL
-    setFormData({ 
-      ...formData, 
-      posterUrl: previewUrl,
-      imagePath: previewUrl  // Update both fields
-    });
+    setNewPoster(file);
+  };
+  
+  const uploadPoster = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uuidv4()}.${fileExt}`;
+      const filePath = `${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('movie-posters')
+        .upload(filePath, file);
+        
+      if (uploadError) {
+        console.error('Error uploading poster:', uploadError);
+        return null;
+      }
+      
+      // Get the public URL for the uploaded image
+      const { data } = supabase.storage
+        .from('movie-posters')
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error in upload process:', error);
+      return null;
+    }
   };
   
   const validateForm = () => {
@@ -137,7 +193,8 @@ const EditMovie = () => {
     }
     
     // Validate rating
-    if (formData.rating < 0 || formData.rating > 10) {
+    if (formData.rating !== null && 
+        (formData.rating < 0 || formData.rating > 10)) {
       toast({
         title: "Invalid Rating",
         description: "Rating must be between 0 and 10",
@@ -147,7 +204,7 @@ const EditMovie = () => {
     }
     
     // Validate release date
-    if (!formData.releaseDate) {
+    if (!formData.release_date) {
       toast({
         title: "Invalid Date",
         description: "Please enter a valid release date",
@@ -159,38 +216,52 @@ const EditMovie = () => {
     return true;
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      setIsSubmitting(false);
+      return;
+    }
     
-    // In a real app, this would save to a database
     try {
-      const updatedMovie = updateMovie({
-        id: formData.id,
+      // Handle poster update if there's a new file
+      let imageUrl = formData.image_path;
+      if (newPoster) {
+        const uploadedUrl = await uploadPoster(newPoster);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        } else {
+          toast({
+            title: "Warning",
+            description: "Failed to upload new poster, using existing image",
+            variant: "default"
+          });
+        }
+      }
+      
+      // Update movie in database
+      const movieData = {
         title: formData.title,
         genre: formData.genre,
         description: formData.description,
-        cast: formData.cast,
-        imagePath: formData.imagePath,
-        rating: Number(formData.rating),
-        releaseDate: formData.releaseDate,
-        status: formData.status
-      });
+        cast_members: formData.cast_members || null,
+        image_path: imageUrl,
+        status: mapFormStatusToDbStatus(formData.status),
+        release_date: formData.release_date,
+        rating: typeof formData.rating === 'string' 
+                ? parseFloat(formData.rating) 
+                : formData.rating
+      };
       
-      if (updatedMovie) {
-        toast({
-          title: "Success",
-          description: "Movie updated successfully"
-        });
-        navigate('/admin/movies');
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to update movie",
-          variant: "destructive"
-        });
-      }
+      await updateMovie(id!, movieData);
+      
+      toast({
+        title: "Success",
+        description: "Movie updated successfully"
+      });
+      navigate('/admin/movies');
     } catch (error) {
       console.error("Update error:", error);
       toast({
@@ -198,6 +269,8 @@ const EditMovie = () => {
         description: "An error occurred while updating the movie",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -278,13 +351,13 @@ const EditMovie = () => {
             </div>
             
             <div>
-              <label htmlFor="cast" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="cast_members" className="block text-sm font-medium text-gray-700 mb-1">
                 Cast
               </label>
               <Input
-                id="cast"
-                name="cast"
-                value={formData.cast}
+                id="cast_members"
+                name="cast_members"
+                value={formData.cast_members || ''}
                 onChange={handleChange}
                 className="w-full"
                 placeholder="Separate names with commas"
@@ -302,7 +375,7 @@ const EditMovie = () => {
                 min="0"
                 max="10"
                 step="0.1"
-                value={formData.rating}
+                value={formData.rating || ''}
                 onChange={handleChange}
                 className="w-full"
               />
@@ -329,14 +402,14 @@ const EditMovie = () => {
             </div>
             
             <div>
-              <label htmlFor="releaseDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="release_date" className="block text-sm font-medium text-gray-700 mb-1">
                 Release Date<span className="text-red-500">*</span>
               </label>
               <Input
-                id="releaseDate"
-                name="releaseDate"
+                id="release_date"
+                name="release_date"
                 type="date"
-                value={formData.releaseDate}
+                value={formData.release_date || ''}
                 onChange={handleChange}
                 className="w-full"
                 required
@@ -379,11 +452,16 @@ const EditMovie = () => {
           </div>
           
           <div className="flex justify-end space-x-4 pt-4">
-            <Button variant="outline" type="button" onClick={() => navigate('/admin/movies')}>
+            <Button 
+              variant="outline" 
+              type="button" 
+              onClick={() => navigate('/admin/movies')}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">
-              Update Movie
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Updating..." : "Update Movie"}
             </Button>
           </div>
         </form>
