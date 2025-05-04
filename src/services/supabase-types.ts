@@ -1,4 +1,3 @@
-
 // Helper types for our Supabase data
 export interface Profile {
   id: string;
@@ -20,7 +19,7 @@ export interface Movie {
   genre: string | null;
   cast_members: string | null;
   duration: number | null;
-  status: 'Now Playing' | 'Upcoming';
+  status: 'Now Playing' | 'Upcoming' | 'Finished';
   created_at: string;
   updated_at: string;
 }

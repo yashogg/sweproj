@@ -187,7 +187,7 @@ const AddMovie = () => {
         description: formData.description,
         cast_members: formData.cast || null,
         image_path: imageUrl,
-        status: statusMap[formData.status] || 'Upcoming',
+        status: statusMap[formData.status] as 'Now Playing' | 'Upcoming' | 'Finished',
         release_date: formData.releaseDate,
         rating: parseFloat(formData.rating.toString()),
         duration: formData.duration // Added duration field
