@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -23,7 +22,6 @@ import TicketConfirmation from "./pages/TicketConfirmation";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/Dashboard";
 import MovieManagement from "./pages/admin/MovieManagement";
-import UserManagement from "./pages/admin/UserManagement";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AddMovie from "./pages/admin/AddMovie";
 import EditMovie from "./pages/admin/EditMovie";
@@ -108,7 +106,6 @@ const App = () => (
               <Route path="/admin/movies" element={<ProtectedRoute element={<MovieManagement />} requireAdmin={true} />} />
               <Route path="/admin/movies/add" element={<ProtectedRoute element={<AddMovie />} requireAdmin={true} />} />
               <Route path="/admin/movies/edit/:id" element={<ProtectedRoute element={<EditMovie />} requireAdmin={true} />} />
-              <Route path="/admin/users" element={<ProtectedRoute element={<UserManagement />} requireAdmin={true} />} />
               <Route path="/admin/settings" element={<ProtectedRoute element={<AdminSettings />} requireAdmin={true} />} />
               
               {/* 404 */}
