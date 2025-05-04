@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { getShowtimes } from '@/services/showtime-service';
+import { ShowtimeWithDetails } from '@/services/supabase-types';
 import {
   Select,
   SelectContent,
@@ -17,12 +19,12 @@ import { AlertCircle } from 'lucide-react';
 interface BookingFormProps {
   movieId: string;
   movieTitle: string;
-  showtimes: {
+  showtimes?: {
     id: number;
     time: string;
     date: string;
   }[];
-  isUpcoming?: boolean; // New prop to indicate if movie is upcoming
+  isUpcoming?: boolean;
 }
 
 // Available theaters - added as per requirements
@@ -35,24 +37,48 @@ const theaters = [
   { id: 6, name: "Abilene" }
 ];
 
-const BookingForm = ({ movieId, movieTitle, showtimes, isUpcoming = false }: BookingFormProps) => {
+const BookingForm = ({ movieId, movieTitle, isUpcoming = false }: BookingFormProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [selectedTheater, setSelectedTheater] = useState("");
   const [selectedShowtime, setSelectedShowtime] = useState("");
+  const [selectedShowtimeId, setSelectedShowtimeId] = useState(""); // Added to store showtime ID
   const [selectedDate, setSelectedDate] = useState("");
   const [seatCount, setSeatCount] = useState(1);
   const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [databaseShowtimes, setDatabaseShowtimes] = useState<ShowtimeWithDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // Get unique dates for the select dropdown
+  // Fetch showtimes from database
   useEffect(() => {
-    if (showtimes) {
-      const dates = [...new Set(showtimes.map(show => show.date))];
-      setAvailableDates(dates);
-      if (dates.length > 0) setSelectedDate(dates[0]);
+    const loadShowtimes = async () => {
+      try {
+        setIsLoading(true);
+        const showtimeData = await getShowtimes(movieId);
+        setDatabaseShowtimes(showtimeData);
+        
+        // Extract unique dates for the dropdown
+        const dates = [...new Set(showtimeData.map(show => show.date))];
+        setAvailableDates(dates);
+        if (dates.length > 0) setSelectedDate(dates[0]);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching showtimes:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load showtimes",
+          variant: "destructive"
+        });
+        setIsLoading(false);
+      }
+    };
+    
+    if (!isUpcoming && movieId) {
+      loadShowtimes();
     }
-  }, [showtimes]);
+  }, [movieId, isUpcoming, toast]);
 
   // Handle buying tickets
   const handleBuyTickets = () => {
@@ -66,7 +92,7 @@ const BookingForm = ({ movieId, movieTitle, showtimes, isUpcoming = false }: Boo
       return;
     }
     
-    if (!selectedTheater || !selectedShowtime || !selectedDate) {
+    if (!selectedTheater || !selectedShowtime || !selectedDate || !selectedShowtimeId) {
       toast({
         title: "Selection Required",
         description: "Please select theater, date and showtime",
@@ -84,16 +110,21 @@ const BookingForm = ({ movieId, movieTitle, showtimes, isUpcoming = false }: Boo
       return;
     }
 
+    // Find the selected showtime to get price
+    const showtime = databaseShowtimes.find(st => st.id === selectedShowtimeId);
+    const ticketPrice = showtime?.price || 12.99;
+
     // Store booking details in session storage
     const bookingDetails = {
       movieId,
       movieTitle,
       theater: selectedTheater,
       showtime: selectedShowtime,
+      showtimeId: selectedShowtimeId, // Include the showtime ID
       date: selectedDate,
       seats: seatCount,
-      ticketPrice: 12.99, // Sample price
-      totalAmount: (12.99 * seatCount).toFixed(2)
+      ticketPrice,
+      totalAmount: (ticketPrice * seatCount).toFixed(2)
     };
     
     sessionStorage.setItem('bookingDetails', JSON.stringify(bookingDetails));
@@ -119,103 +150,114 @@ const BookingForm = ({ movieId, movieTitle, showtimes, isUpcoming = false }: Boo
     <div className="bg-ticketeer-purple-dark p-6 rounded-md">
       <h3 className="font-bold text-xl mb-4 text-white">Book Tickets</h3>
       
-      <div className="space-y-4">
-        <div>
-          <label className="block text-gray-400 text-sm mb-1">Select Theater</label>
-          <Select
-            value={selectedTheater}
-            onValueChange={setSelectedTheater}
-          >
-            <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
-              <SelectValue placeholder="Select Theater" />
-            </SelectTrigger>
-            <SelectContent>
-              {theaters.map(theater => (
-                <SelectItem key={theater.id} value={theater.name}>
-                  {theater.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <label className="block text-gray-400 text-sm mb-1">Select Date</label>
-          <Select
-            value={selectedDate}
-            onValueChange={setSelectedDate}
-          >
-            <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
-              <SelectValue placeholder="Select Date" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableDates.map(date => {
-                const formattedDate = new Date(date).toLocaleDateString('en-US', {
-                  weekday: 'short',
-                  month: 'short',
-                  day: 'numeric'
-                });
-                return (
-                  <SelectItem key={date} value={date}>
-                    {formattedDate}
+      {isLoading ? (
+        <div className="text-white text-center py-4">Loading showtimes...</div>
+      ) : (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-gray-400 text-sm mb-1">Select Theater</label>
+            <Select
+              value={selectedTheater}
+              onValueChange={setSelectedTheater}
+            >
+              <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
+                <SelectValue placeholder="Select Theater" />
+              </SelectTrigger>
+              <SelectContent>
+                {theaters.map(theater => (
+                  <SelectItem key={theater.id} value={theater.name}>
+                    {theater.name}
                   </SelectItem>
-                );
-              })}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <label className="block text-gray-400 text-sm mb-1">Select Showtime</label>
-          <Select
-            value={selectedShowtime}
-            onValueChange={setSelectedShowtime}
-            disabled={!selectedDate}
-          >
-            <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
-              <SelectValue placeholder="Select Showtime" />
-            </SelectTrigger>
-            <SelectContent>
-              {showtimes
-                .filter(show => show.date === selectedDate)
-                .map(show => (
-                  <SelectItem key={show.id} value={show.time}>
-                    {show.time}
-                  </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-gray-400 text-sm mb-1">Select Date</label>
+            <Select
+              value={selectedDate}
+              onValueChange={setSelectedDate}
+            >
+              <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
+                <SelectValue placeholder="Select Date" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableDates.map(date => {
+                  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric'
+                  });
+                  return (
+                    <SelectItem key={date} value={date}>
+                      {formattedDate}
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-gray-400 text-sm mb-1">Select Showtime</label>
+            <Select
+              value={selectedShowtimeId}
+              onValueChange={(value) => {
+                setSelectedShowtimeId(value);
+                // Find the showtime in the database to set the time
+                const showtime = databaseShowtimes.find(st => st.id === value);
+                if (showtime) {
+                  setSelectedShowtime(showtime.time);
+                }
+              }}
+              disabled={!selectedDate}
+            >
+              <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
+                <SelectValue placeholder="Select Showtime" />
+              </SelectTrigger>
+              <SelectContent>
+                {databaseShowtimes
+                  .filter(show => show.date === selectedDate)
+                  .map(show => (
+                    <SelectItem key={show.id} value={show.id}>
+                      {show.time} - ${show.price.toFixed(2)}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <div>
-          <label className="block text-gray-400 text-sm mb-1">Number of Tickets (Max 10)</label>
-          <Select
-            value={seatCount.toString()}
-            onValueChange={(value) => setSeatCount(parseInt(value))}
-          >
-            <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
-              <SelectValue placeholder="Select Number of Tickets" />
-            </SelectTrigger>
-            <SelectContent>
-              {[...Array(10)].map((_, i) => (
-                <SelectItem key={i+1} value={(i+1).toString()}>
-                  {i+1} {i === 0 ? 'ticket' : 'tickets'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div>
+            <label className="block text-gray-400 text-sm mb-1">Number of Tickets (Max 10)</label>
+            <Select
+              value={seatCount.toString()}
+              onValueChange={(value) => setSeatCount(parseInt(value))}
+            >
+              <SelectTrigger className="w-full bg-ticketeer-purple-darker border-ticketeer-purple-dark text-white">
+                <SelectValue placeholder="Select Number of Tickets" />
+              </SelectTrigger>
+              <SelectContent>
+                {[...Array(10)].map((_, i) => (
+                  <SelectItem key={i+1} value={(i+1).toString()}>
+                    {i+1} {i === 0 ? 'ticket' : 'tickets'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="pt-4">
+            <Button 
+              onClick={handleBuyTickets} 
+              className="w-full bg-ticketeer-yellow text-black hover:bg-yellow-400"
+              aria-label="Buy tickets for this movie"
+            >
+              Buy Tickets
+            </Button>
+          </div>
         </div>
-        
-        <div className="pt-4">
-          <Button 
-            onClick={handleBuyTickets} 
-            className="w-full bg-ticketeer-yellow text-black hover:bg-yellow-400"
-            aria-label="Buy tickets for this movie"
-          >
-            Buy Tickets
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -42,7 +41,7 @@ interface BookingDetails {
   seats: number;
   ticketPrice: number;
   totalAmount: string;
-  showtimeId: string;
+  showtimeId: string; // Make sure this is included
 }
 
 const Checkout = () => {
@@ -86,7 +85,14 @@ const Checkout = () => {
 
     try {
       const details = JSON.parse(bookingDetailsStr);
+      
+      // Verify that showtimeId exists
+      if (!details.showtimeId) {
+        throw new Error("Booking details missing showtime ID");
+      }
+      
       setBookingDetails(details);
+      console.log("Booking details loaded:", details);
     } catch (error) {
       console.error("Error parsing booking details:", error);
       toast({
@@ -137,6 +143,8 @@ const Checkout = () => {
       if (!bookingDetails || !user) {
         throw new Error("Missing booking details or user information");
       }
+
+      console.log("Creating order with showtime_id:", bookingDetails.showtimeId);
 
       // Create order in database with the correct payment_status type
       const order = {

@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
+import { getShowtimes } from '@/services/showtime-service';
+import { ShowtimeWithDetails } from '@/services/supabase-types';
 
 // Import our components
 import MovieHero from '@/components/movie-detail/MovieHero';
@@ -39,16 +41,8 @@ const nowPlayingMovie = {
     { id: 2, user: "ComicBookGuy", rating: 10, comment: "Best Spider-Man movie ever. The callbacks to previous films were amazing.", date: "2021-12-19" },
     { id: 3, user: "CriticEye", rating: 7, comment: "Good, but somewhat predictable. The fan service worked well though.", date: "2021-12-22" }
   ],
-  showtimes: [
-    { id: 1, time: "10:30 AM", date: "2025-05-01" },
-    { id: 2, time: "1:45 PM", date: "2025-05-01" },
-    { id: 3, time: "5:15 PM", date: "2025-05-01" },
-    { id: 4, time: "8:30 PM", date: "2025-05-01" },
-    { id: 5, time: "10:30 AM", date: "2025-05-02" },
-    { id: 6, time: "1:45 PM", date: "2025-05-02" },
-    { id: 7, time: "5:15 PM", date: "2025-05-02" },
-    { id: 8, time: "8:30 PM", date: "2025-05-02" }
-  ]
+  // We'll replace this with data from the database
+  showtimes: []
 };
 
 // Sample movie data for upcoming
@@ -77,12 +71,8 @@ const upcomingMovie = {
     { id: 1, user: "SciFiLover", rating: 9, comment: "Can't wait to see this sequel! The first one was incredible.", date: "2023-06-15" },
     { id: 2, user: "BookWorm", rating: 8, comment: "Hope they do justice to the second half of the book.", date: "2023-07-02" }
   ],
-  showtimes: [
-    { id: 1, time: "7:00 PM", date: "2025-12-15" },
-    { id: 2, time: "10:30 PM", date: "2025-12-15" },
-    { id: 3, time: "11:00 AM", date: "2025-12-16" },
-    { id: 4, time: "2:30 PM", date: "2025-12-16" }
-  ]
+  // We'll replace this with data from the database
+  showtimes: []
 };
 
 const allMovies = [nowPlayingMovie, upcomingMovie];
@@ -91,6 +81,7 @@ const MovieDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [movie, setMovie] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showtimes, setShowtimes] = useState<ShowtimeWithDetails[]>([]);
   
   // Simulate loading movie data
   useEffect(() => {
@@ -104,6 +95,18 @@ const MovieDetail = () => {
     } else {
       // If not found in our samples, use the default
       setMovie(id === '13' ? upcomingMovie : nowPlayingMovie);
+    }
+    
+    // Now fetch actual showtimes if we have a movie ID
+    if (id) {
+      getShowtimes(id)
+        .then(fetchedShowtimes => {
+          console.log("Fetched showtimes:", fetchedShowtimes);
+          setShowtimes(fetchedShowtimes);
+        })
+        .catch(error => {
+          console.error("Error fetching showtimes:", error);
+        });
     }
     
     setLoading(false);
@@ -154,7 +157,6 @@ const MovieDetail = () => {
             <BookingForm 
               movieId={id || '1'} 
               movieTitle={movie.title} 
-              showtimes={movie.showtimes}
               isUpcoming={isUpcoming} 
             />
 
