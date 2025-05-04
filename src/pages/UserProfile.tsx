@@ -9,16 +9,16 @@ import { Save, User, Lock } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const UserProfile = () => {
-  const { user } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Profile form state - using 'name' instead of 'displayName'
+  // Profile form state - using profile data instead of user data
   const [profileData, setProfileData] = useState({
-    name: user?.name || '',
+    name: profile?.name || '',
     email: user?.email || '',
-    phone: '(555) 123-4567', // Placeholder data
-    address: '123 Main St, Anytown, USA' // Placeholder data
+    phone: profile?.phone || '',
+    address: profile?.address || ''
   });
   
   // Password form state
@@ -43,22 +43,24 @@ const UserProfile = () => {
     setIsLoading(true);
     
     try {
-      // In a real app, this would update the user profile
-      // await updateUserProfile(profileData);
+      // Update profile with real data using the updateProfile function from context
+      await updateProfile({
+        name: profileData.name,
+        phone: profileData.phone,
+        address: profileData.address
+      });
       
-      setTimeout(() => {
-        toast({
-          title: "Profile updated",
-          description: "Your profile information has been updated successfully."
-        });
-        setIsLoading(false);
-      }, 1000);
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully."
+      });
     } catch (error) {
       toast({
         title: "Update failed",
         description: "There was a problem updating your profile. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setIsLoading(false);
     }
   };

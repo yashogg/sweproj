@@ -17,10 +17,10 @@ const adminUsers = [
 ];
 
 const AdminSettings = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    name: user?.name || '',
+    name: profile?.name || '',
     email: user?.email || '',
     password: '',
   });

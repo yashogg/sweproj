@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -23,7 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
-  const { isAuthenticated, user, isAdmin, logout } = useAuth();
+  const { isAuthenticated, user, profile, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,7 +83,7 @@ const Navbar = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-ticketeer-purple-dark text-white" align="end">
                   <DropdownMenuLabel className="text-ticketeer-yellow">
-                    {user?.name}
+                    {profile?.name || user?.email}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator className="bg-ticketeer-purple opacity-30" />
                   <DropdownMenuItem onClick={() => navigate('/profile')} className="hover:bg-ticketeer-purple hover:text-white">
