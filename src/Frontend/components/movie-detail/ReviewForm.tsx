@@ -10,21 +10,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { addReview } from '../../services/review-service';
 
 interface ReviewFormProps {
   onSubmitReview: (rating: number, comment: string) => void;
   onCancel: () => void;
+  movieId: string;
 }
 
-const ReviewForm = ({ onSubmitReview, onCancel }: ReviewFormProps) => {
-  const { isAuthenticated } = useAuth();
+const ReviewForm = ({ onSubmitReview, onCancel, movieId }: ReviewFormProps) => {
+  const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const [reviewForm, setReviewForm] = useState({
     rating: 5,
     comment: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isAuthenticated) {
       toast({
         title: "Login Required",
@@ -43,7 +46,32 @@ const ReviewForm = ({ onSubmitReview, onCancel }: ReviewFormProps) => {
       return;
     }
 
-    onSubmitReview(reviewForm.rating, reviewForm.comment);
+    setIsSubmitting(true);
+    
+    try {
+      // Call the localStorage service to save the review
+      if (user?.id) {
+        await addReview({
+          movie_id: movieId,
+          user_id: user.id,
+          rating: reviewForm.rating,
+          comment: reviewForm.comment
+        });
+      }
+      
+      // Call the parent component handler
+      onSubmitReview(reviewForm.rating, reviewForm.comment);
+      
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem submitting your review. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -84,12 +112,14 @@ const ReviewForm = ({ onSubmitReview, onCancel }: ReviewFormProps) => {
           <Button 
             onClick={handleSubmit}
             className="bg-ticketeer-yellow text-black hover:bg-yellow-400"
+            disabled={isSubmitting}
           >
-            Submit Review
+            {isSubmitting ? "Submitting..." : "Submit Review"}
           </Button>
           <Button 
             variant="outline"
             onClick={onCancel}
+            disabled={isSubmitting}
           >
             Cancel
           </Button>

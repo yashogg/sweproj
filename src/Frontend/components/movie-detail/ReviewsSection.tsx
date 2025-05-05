@@ -1,22 +1,42 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ReviewForm from './ReviewForm';
 import ReviewItem from './ReviewItem';
 import { ReviewItem as ReviewItemType } from '../../services/types';
+import { getMovieReviewItems } from '../../services/review-service';
+import { initializeLocalData } from '../../services/local-storage-service';
 
 interface ReviewsSectionProps {
-  initialReviews: ReviewItemType[];
+  initialReviews?: ReviewItemType[];
+  movieId: string;
 }
 
-const ReviewsSection = ({ initialReviews }: ReviewsSectionProps) => {
-  const [reviews, setReviews] = useState<ReviewItemType[]>(initialReviews);
+const ReviewsSection = ({ initialReviews, movieId }: ReviewsSectionProps) => {
+  const [reviews, setReviews] = useState<ReviewItemType[]>(initialReviews || []);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const { toast } = useToast();
 
+  // Ensure localStorage is initialized
+  useEffect(() => {
+    initializeLocalData();
+  }, []);
+
+  // Fetch reviews from localStorage if no initialReviews were provided
+  useEffect(() => {
+    if (!initialReviews && movieId) {
+      const fetchReviews = async () => {
+        const reviewItems = await getMovieReviewItems(movieId);
+        setReviews(reviewItems);
+      };
+      
+      fetchReviews();
+    }
+  }, [initialReviews, movieId]);
+
   const handleSubmitReview = (rating: number, comment: string) => {
-    // In a real app, this would be an API call to save the review
+    // In a real app, this would call the review-service to save the review
     const newReview: ReviewItemType = {
       id: `id_${Date.now()}`,
       user: "CurrentUser", // In a real app, get this from auth context
@@ -53,20 +73,25 @@ const ReviewsSection = ({ initialReviews }: ReviewsSectionProps) => {
         <ReviewForm 
           onSubmitReview={handleSubmitReview}
           onCancel={() => setShowReviewForm(false)}
+          movieId={movieId}
         />
       )}
       
       <div className="space-y-6">
-        {reviews.map(review => (
-          <ReviewItem
-            key={review.id}
-            id={review.id}
-            user={review.user}
-            rating={review.rating}
-            comment={review.comment}
-            date={review.date}
-          />
-        ))}
+        {reviews.length === 0 ? (
+          <p className="text-gray-300 text-center py-4">No reviews yet. Be the first to leave a review!</p>
+        ) : (
+          reviews.map(review => (
+            <ReviewItem
+              key={review.id}
+              id={review.id}
+              user={review.user}
+              rating={review.rating}
+              comment={review.comment}
+              date={review.date}
+            />
+          ))
+        )}
       </div>
     </div>
   );

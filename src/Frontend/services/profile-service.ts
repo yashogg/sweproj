@@ -1,6 +1,6 @@
 
 import { Profile } from './types';
-import { getLocalData, setLocalData } from './local-storage-service';
+import { getLocalData, setLocalData, generateId } from './local-storage-service';
 
 export async function getUserProfile(userId: string): Promise<Profile | null> {
   try {
@@ -61,6 +61,38 @@ export async function getAllProfiles(): Promise<Profile[]> {
     return getLocalData<Profile[]>('profiles', []);
   } catch (error) {
     console.error('Error fetching profiles:', error);
+    throw error;
+  }
+}
+
+export async function createProfile(profile: Omit<Profile, 'id' | 'created_at' | 'updated_at'>): Promise<Profile> {
+  try {
+    const profiles = getLocalData<Profile[]>('profiles', []);
+    
+    const newProfile: Profile = {
+      ...profile,
+      id: generateId(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    profiles.push(newProfile);
+    setLocalData('profiles', profiles);
+    
+    return newProfile;
+  } catch (error) {
+    console.error('Error creating profile:', error);
+    throw error;
+  }
+}
+
+export async function deleteProfile(id: string): Promise<void> {
+  try {
+    const profiles = getLocalData<Profile[]>('profiles', []);
+    const filteredProfiles = profiles.filter(profile => profile.id !== id);
+    setLocalData('profiles', filteredProfiles);
+  } catch (error) {
+    console.error('Error deleting profile:', error);
     throw error;
   }
 }

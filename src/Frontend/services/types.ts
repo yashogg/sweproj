@@ -42,6 +42,8 @@ export interface Showtime {
   price: number;
   available_seats: number;
   created_at: string;
+  movie?: Movie;
+  theater?: Theater;
 }
 
 export interface Order {

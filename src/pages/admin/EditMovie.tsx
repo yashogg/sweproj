@@ -15,8 +15,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
-import { getMovieById, updateMovie } from '@/services/movie-service';
+import { getMovieById, updateMovie } from '@/Frontend/services/movie-service';
 import { v4 as uuidv4 } from 'uuid';
 
 interface MovieDetails {
@@ -156,33 +155,6 @@ const EditMovie = () => {
     setNewPoster(file);
   };
   
-  const uploadPoster = async (file: File): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('movie-posters')
-        .upload(filePath, file);
-        
-      if (uploadError) {
-        console.error('Error uploading poster:', uploadError);
-        return null;
-      }
-      
-      // Get the public URL for the uploaded image
-      const { data } = supabase.storage
-        .from('movie-posters')
-        .getPublicUrl(filePath);
-        
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Error in upload process:', error);
-      return null;
-    }
-  };
-  
   const validateForm = () => {
     // Check required fields
     if (!formData.title || !formData.description || !formData.status) {
@@ -230,17 +202,9 @@ const EditMovie = () => {
     try {
       // Handle poster update if there's a new file
       let imageUrl = formData.image_path;
-      if (newPoster) {
-        const uploadedUrl = await uploadPoster(newPoster);
-        if (uploadedUrl) {
-          imageUrl = uploadedUrl;
-        } else {
-          toast({
-            title: "Warning",
-            description: "Failed to upload new poster, using existing image",
-            variant: "default"
-          });
-        }
+      if (newPoster && imagePreview) {
+        // In this simplified version, we'll just use the preview URL
+        imageUrl = imagePreview;
       }
       
       // Update movie in database

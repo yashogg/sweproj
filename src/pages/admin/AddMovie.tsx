@@ -13,8 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { supabase } from '@/integrations/supabase/client';
-import { addMovie } from '@/services/movie-service';
+import { addMovie } from '@/Frontend/services/movie-service';
 import { v4 as uuidv4 } from 'uuid';
 
 const AddMovie = () => {
@@ -65,38 +64,6 @@ const AddMovie = () => {
     setFormData({ ...formData, poster: file });
   };
   
-  const uploadPoster = async (file: File): Promise<string | null> => {
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('movie-posters')
-        .upload(filePath, file);
-        
-      if (uploadError) {
-        console.error('Error uploading poster:', uploadError);
-        toast({
-          title: "Upload Failed",
-          description: "Could not upload movie poster",
-          variant: "destructive"
-        });
-        return null;
-      }
-      
-      // Get the public URL for the uploaded image
-      const { data } = supabase.storage
-        .from('movie-posters')
-        .getPublicUrl(filePath);
-        
-      return data.publicUrl;
-    } catch (error) {
-      console.error('Error in upload process:', error);
-      return null;
-    }
-  };
-  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -106,16 +73,6 @@ const AddMovie = () => {
       toast({
         title: "Error",
         description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
-    }
-    
-    if (!formData.poster) {
-      toast({
-        title: "Error",
-        description: "Please upload a movie poster.",
         variant: "destructive"
       });
       setIsSubmitting(false);
@@ -158,29 +115,22 @@ const AddMovie = () => {
     }
     
     try {
-      // 1. Upload poster image to Supabase Storage
+      // Handle image storage (In a local-only app, we'd use a data URL)
       let imageUrl = null;
-      if (formData.poster) {
-        imageUrl = await uploadPoster(formData.poster);
-        if (!imageUrl) {
-          toast({
-            title: "Error",
-            description: "Failed to upload movie poster",
-            variant: "destructive"
-          });
-          setIsSubmitting(false);
-          return;
-        }
+      if (formData.poster && imagePreview) {
+        // In this simplified version, we'll just store the data URL from the preview
+        // In a real app with a backend, you'd upload this to a storage service
+        imageUrl = imagePreview;
       }
       
-      // 2. Map form status to database status format
+      // Map form status to database status format
       const statusMap: Record<string, 'Now Playing' | 'Upcoming' | 'Finished'> = {
         'nowPlaying': 'Now Playing',
         'upcoming': 'Upcoming',
         'finished': 'Finished'
       };
       
-      // 3. Save movie data to Supabase
+      // Save movie data
       const movieData = {
         title: formData.title,
         genre: formData.genre,

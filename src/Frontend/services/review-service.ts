@@ -1,5 +1,5 @@
 
-import { Review } from './types';
+import { Review, ReviewItem } from './types';
 import { getLocalData, setLocalData, generateId } from './local-storage-service';
 
 export async function getMovieReviews(movieId: string): Promise<Review[]> {
@@ -74,5 +74,34 @@ export async function deleteReview(id: string): Promise<void> {
   } catch (error) {
     console.error('Error deleting review:', error);
     throw error;
+  }
+}
+
+// Helper function to convert Review to ReviewItem format for UI
+export function reviewToReviewItem(review: Review, userName: string = "User"): ReviewItem {
+  return {
+    id: review.id,
+    user: userName,
+    rating: review.rating,
+    comment: review.comment || "",
+    date: review.created_at
+  };
+}
+
+// Get all reviews in ReviewItem format for a movie
+export async function getMovieReviewItems(movieId: string): Promise<ReviewItem[]> {
+  try {
+    const reviews = await getMovieReviews(movieId);
+    const profiles = getLocalData('profiles', []);
+    
+    return reviews.map(review => {
+      const profile = profiles.find(p => p.id === review.user_id);
+      const userName = profile?.name || "Anonymous User";
+      
+      return reviewToReviewItem(review, userName);
+    });
+  } catch (error) {
+    console.error('Error fetching review items:', error);
+    return [];
   }
 }
