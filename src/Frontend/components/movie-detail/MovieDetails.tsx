@@ -18,6 +18,7 @@ interface MovieDetailsProps {
   rating: number;
   status: 'Now Playing' | 'Upcoming' | 'Finished';
   reviews: ReviewItem[];
+  movieId: string;
 }
 
 const MovieDetails = ({
@@ -25,7 +26,8 @@ const MovieDetails = ({
   cast,
   rating,
   status,
-  reviews
+  reviews,
+  movieId
 }: MovieDetailsProps) => {
   return (
     <div className="md:w-2/3">
@@ -42,7 +44,7 @@ const MovieDetails = ({
       <RatingsSection userRating={rating} />
       
       {/* Reviews Section */}
-      <ReviewsSection initialReviews={reviews} />
+      <ReviewsSection initialReviews={reviews} movieId={movieId} />
     </div>
   );
 };

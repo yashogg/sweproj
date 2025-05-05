@@ -1,6 +1,5 @@
-
-import { Showtime, ShowtimeWithDetails } from './supabase-types';
-import { getLocalData, setLocalData, initializeLocalData } from './local-storage-service';
+import { Showtime, ShowtimeWithDetails } from '../services/types';
+import { getLocalData, setLocalData, initializeLocalData } from '../services/local-storage-service';
 
 // Initialize local data if needed
 initializeLocalData();

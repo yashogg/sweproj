@@ -1,8 +1,8 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { Profile } from '@/services/supabase-types';
+import { Profile } from '../services/types';
 import { useToast } from '@/hooks/use-toast';
-import { getLocalData, setLocalData } from '@/services/local-storage-service';
+import { getLocalData, setLocalData } from '../services/local-storage-service';
 
 interface User {
   id: string;

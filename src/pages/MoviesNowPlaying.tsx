@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
 import MovieCardWithStatus from '@/components/MovieCardWithStatus';
 import { getNowPlayingMovies } from '@/services/movie-service';
-import { Movie } from '@/services/supabase-types';
+import { Movie } from '@/services/types';
 
 const MoviesNowPlaying = () => {
   const [movies, setMovies] = useState<Movie[]>([]);

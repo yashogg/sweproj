@@ -3,7 +3,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { initializeLocalData } from './services/local-storage-service.ts'
+import { initializeLocalData } from './services/local-storage-service'
 
 // Initialize mock data in localStorage
 initializeLocalData();

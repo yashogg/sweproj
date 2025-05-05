@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import MovieCardWithStatus from '@/components/MovieCardWithStatus';
 import { getUpcomingMovies } from '@/services/movie-service';
 import { useToast } from '@/hooks/use-toast';
-import { Movie } from '@/services/supabase-types';
+import { Movie } from '@/services/types';
 
 const MoviesUpcoming = () => {
   const [movies, setMovies] = useState<Movie[]>([]);

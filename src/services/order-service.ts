@@ -1,6 +1,6 @@
 
-import { Order, OrderWithDetails } from './supabase-types';
-import { getLocalData, setLocalData, generateId } from './local-storage-service';
+import { Order, OrderWithDetails } from '../services/types';
+import { getLocalData, setLocalData, generateId } from '../services/local-storage-service';
 import { getShowtimeById } from './showtime-service';
 
 export async function getUserOrders(userId: string): Promise<OrderWithDetails[]> {

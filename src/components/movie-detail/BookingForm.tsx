@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { getShowtimes } from '@/services/showtime-service';
-import { ShowtimeWithDetails } from '@/services/supabase-types';
+import { ShowtimeWithDetails } from '@/services/types';
 import {
   Select,
   SelectContent,

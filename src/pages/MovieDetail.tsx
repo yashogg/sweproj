@@ -1,9 +1,8 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { getShowtimes } from '@/services/showtime-service';
-import { ShowtimeWithDetails } from '@/services/supabase-types';
+import { ShowtimeWithDetails, MovieWithShowtimes, ReviewItem } from '@/services/types';
 import { initializeLocalData } from '@/services/local-storage-service';
 
 // Import our components
@@ -14,6 +13,8 @@ import Synopsis from '@/components/movie-detail/Synopsis';
 import CastSection from '@/components/movie-detail/CastSection';
 import RatingsSection from '@/components/movie-detail/RatingsSection';
 import ReviewsSection from '@/components/movie-detail/ReviewsSection';
+import MovieSidebar from '@/components/movie-detail/MovieSidebar';
+import MovieDetails from '@/components/movie-detail/MovieDetails';
 
 // Initialize mock data
 initializeLocalData();
@@ -146,7 +147,7 @@ const MovieDetail = () => {
       {/* Hero Banner */}
       <MovieHero 
         title={movie.title}
-        tagline={movie.tagline}
+        tagline=""
         releaseDate={movie.releaseDate}
         duration={movie.duration}
         genres={movie.genres}
@@ -156,45 +157,25 @@ const MovieDetail = () => {
       {/* Movie Details */}
       <section className="container mx-auto px-5 py-12">
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-1/3">
-            {/* Ticket Booking Section */}
-            <BookingForm 
-              movieId={id || '1'} 
-              movieTitle={movie.title} 
-              isUpcoming={isUpcoming}
-              showtimes={showtimes} // Passing ShowtimeWithDetails[] directly now
-            />
-
-            <MovieInfo 
-              director={movie.director}
-              studios={movie.studios}
-            />
-          </div>
+          {/* Sidebar with Booking Form and Movie Info */}
+          <MovieSidebar 
+            movieId={id || '1'}
+            movieTitle={movie.title}
+            isUpcoming={isUpcoming}
+            showtimes={showtimes}
+            director=""
+            studios={[]}
+          />
           
-          <div className="md:w-2/3">
-            {/* Status Badge */}
-            <div className="mb-6">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                isUpcoming 
-                  ? 'bg-blue-100 text-blue-800' 
-                  : 'bg-green-100 text-green-800'
-              }`}>
-                {movie.status}
-              </span>
-            </div>
-            
-            {/* Synopsis */}
-            <Synopsis description={movie.description} />
-            
-            {/* Cast Section */}
-            <CastSection cast={movie.cast} />
-            
-            {/* Ratings */}
-            <RatingsSection userRating={movie.rating} />
-            
-            {/* Reviews Section */}
-            <ReviewsSection initialReviews={movie.reviews} />
-          </div>
+          {/* Main content with Synopsis, Cast, Ratings, and Reviews */}
+          <MovieDetails 
+            description={movie.description}
+            cast={movie.cast}
+            rating={movie.rating}
+            status={movie.status}
+            reviews={movie.reviews}
+            movieId={id || '1'}
+          />
         </div>
       </section>
     </Layout>
