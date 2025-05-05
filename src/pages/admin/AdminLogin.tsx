@@ -149,7 +149,7 @@ const AdminLogin = () => {
                   Fill Demo Credentials
                 </Button>
                 <p className="text-gray-400 mt-1">
-                  Use <code>admin@ticketeer.com</code> / <code>admin</code>
+                  Use <code className="bg-ticketeer-purple-darker px-1 py-0.5 rounded">admin@ticketeer.com</code> / <code className="bg-ticketeer-purple-darker px-1 py-0.5 rounded">admin</code>
                 </p>
               </div>
             </form>

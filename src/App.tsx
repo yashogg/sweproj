@@ -20,6 +20,12 @@ import OrderHistory from "./pages/OrderHistory";
 import TicketConfirmation from "./pages/TicketConfirmation";
 import NotFound from "./pages/NotFound";
 
+// Admin Pages
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/Dashboard";
+import MovieManagement from "./pages/admin/MovieManagement";
+import AdminSettings from "./pages/admin/AdminSettings";
+
 // Auth provider
 import { AuthProvider } from "./context/AuthContext";
 
@@ -46,7 +52,7 @@ const ProtectedRoute = ({ element, requireAuth = false, requireAdmin = false }: 
   
   // Check if user is admin when required
   if (requireAdmin && (!isAuthenticated || !isAdmin)) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
   
   // If user is already authenticated, redirect from login/register pages to home
@@ -92,6 +98,12 @@ const App = () => (
               <Route path="/orders" element={<ProtectedRoute element={<OrderHistory />} requireAuth={true} />} />
               <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} requireAuth={true} />} />
               <Route path="/ticket/:id" element={<ProtectedRoute element={<TicketConfirmation />} requireAuth={true} />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/admin" element={<ProtectedRoute element={<AdminDashboard />} requireAdmin={true} />} />
+              <Route path="/admin/movies" element={<ProtectedRoute element={<MovieManagement />} requireAdmin={true} />} />
+              <Route path="/admin/settings" element={<ProtectedRoute element={<AdminSettings />} requireAdmin={true} />} />
               
               {/* 404 */}
               <Route path="*" element={<NotFound />} />

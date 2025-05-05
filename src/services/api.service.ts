@@ -12,6 +12,21 @@ import {
 // Initialize local data on app startup
 export const initializeApp = () => {
   initializeLocalData();
+  
+  // Ensure admin account is created
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const adminExists = users.some((user: any) => user.email === 'admin@ticketeer.com');
+  
+  if (!adminExists) {
+    users.push({
+      id: 'admin1',
+      email: 'admin@ticketeer.com',
+      name: 'Admin User',
+      password: 'admin', // In a real app, this would be hashed
+      isAdmin: true
+    });
+    localStorage.setItem('users', JSON.stringify(users));
+  }
 };
 
 // Movies API
@@ -36,7 +51,7 @@ export const login = async (email: string, password: string) => {
     id: 'user1',
     email,
     name: 'Test User',
-    isAdmin: email === 'admin@movieapp.com'
+    isAdmin: email === 'admin@ticketeer.com'
   };
 };
 
