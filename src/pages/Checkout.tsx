@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -41,7 +42,7 @@ interface BookingDetails {
   seats: number;
   ticketPrice: number;
   totalAmount: string;
-  showtimeId: string; // Make sure this is included
+  showtimeId: string;
 }
 
 const Checkout = () => {
@@ -146,13 +147,18 @@ const Checkout = () => {
 
       console.log("Creating order with showtime_id:", bookingDetails.showtimeId);
 
-      // Create order in database with the correct payment_status type
+      // Create order in database
       const order = {
-        user_id: user.id,
-        showtime_id: bookingDetails.showtimeId,
+        userId: user.id,
+        movieId: bookingDetails.movieId,
+        movieTitle: bookingDetails.movieTitle,
+        showtimeId: bookingDetails.showtimeId,
+        showtime: bookingDetails.showtime,
+        date: bookingDetails.date,
+        theater: bookingDetails.theater,
         seats: bookingDetails.seats,
-        total_amount: parseFloat(bookingDetails.totalAmount),
-        payment_status: 'Completed' as 'Completed' | 'Pending' | 'Failed'
+        totalPrice: parseFloat(bookingDetails.totalAmount),
+        paymentStatus: 'Completed' as 'Completed' | 'Pending' | 'Failed'
       };
 
       const createdOrder = await createOrder(order);
@@ -226,28 +232,29 @@ const Checkout = () => {
                       </p>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Date:</span>
-                      <span className="font-medium text-white">{new Date(bookingDetails.date).toLocaleDateString('en-US', {
-                        weekday: 'short',
-                        month: 'short',
-                        day: 'numeric'
-                      })}</span>
+                    <div className="flex justify-between text-gray-300">
+                      <span>Date:</span>
+                      <span>{bookingDetails.date}</span>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Showtime:</span>
-                      <span className="font-medium text-white">{bookingDetails.showtime}</span>
+                    <div className="flex justify-between text-gray-300">
+                      <span>Time:</span>
+                      <span>{bookingDetails.showtime}</span>
                     </div>
                     
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-300">Tickets:</span>
-                      <span className="font-medium text-white">{bookingDetails.seats} x ${bookingDetails.ticketPrice.toFixed(2)}</span>
+                    <div className="flex justify-between text-gray-300">
+                      <span>Tickets:</span>
+                      <span>{bookingDetails.seats}</span>
                     </div>
-
-                    <Separator />
                     
-                    <div className="flex justify-between font-bold text-white">
+                    <Separator className="my-4" />
+                    
+                    <div className="flex justify-between text-gray-300">
+                      <span>Price per ticket:</span>
+                      <span>${bookingDetails.ticketPrice.toFixed(2)}</span>
+                    </div>
+                    
+                    <div className="flex justify-between font-bold text-lg text-white">
                       <span>Total:</span>
                       <span>${bookingDetails.totalAmount}</span>
                     </div>
@@ -259,163 +266,127 @@ const Checkout = () => {
               <div className="md:col-span-2">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center text-white">
-                      <Lock className="h-5 w-5 mr-2 text-green-600" />
-                      Secure Payment
-                    </CardTitle>
-                    <CardDescription className="text-gray-300">
-                      All transactions are secure and encrypted
-                    </CardDescription>
+                    <CardTitle className="text-white">Payment Information</CardTitle>
+                    <CardDescription>Choose your payment method</CardDescription>
                   </CardHeader>
                   
                   <CardContent>
                     <form onSubmit={handleSubmit}>
-                      {/* Payment Method Selection */}
-                      <div className="mb-6">
-                        <Label className="mb-2 block text-white">Payment Method</Label>
-                        <RadioGroup
-                          value={paymentMethod}
-                          onValueChange={handlePaymentMethodChange}
-                          className="gap-4"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="creditCard" id="creditCard" />
-                            <Label htmlFor="creditCard" className="flex items-center text-white">
-                              <CreditCard className="h-4 w-4 mr-2" />
-                              Credit Card
-                            </Label>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="paypal" id="paypal" />
-                            <Label htmlFor="paypal" className="text-white">PayPal</Label>
-                          </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="venmo" id="venmo" />
-                            <Label htmlFor="venmo" className="text-white">Venmo</Label>
-                          </div>
-                        </RadioGroup>
-                      </div>
+                      <RadioGroup 
+                        value={paymentMethod}
+                        onValueChange={handlePaymentMethodChange}
+                        className="mb-6"
+                      >
+                        <div className="flex items-center space-x-2 mb-4">
+                          <RadioGroupItem value="creditCard" id="creditCard" />
+                          <Label htmlFor="creditCard" className="cursor-pointer flex items-center">
+                            <CreditCard className="mr-2 h-5 w-5 text-gray-300" />
+                            <span className="text-white">Credit Card</span>
+                          </Label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 mb-4">
+                          <RadioGroupItem value="paypal" id="paypal" />
+                          <Label htmlFor="paypal" className="cursor-pointer text-white">PayPal</Label>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="venmo" id="venmo" />
+                          <Label htmlFor="venmo" className="cursor-pointer text-white">Venmo</Label>
+                        </div>
+                      </RadioGroup>
                       
-                      {/* Credit Card Fields */}
                       {paymentMethod === 'creditCard' && (
                         <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="cardNumber" className="text-white">Card Number</Label>
-                            <Input
-                              id="cardNumber"
-                              name="cardNumber"
-                              placeholder="1234 5678 9012 3456"
-                              value={formData.cardNumber}
-                              onChange={handleInputChange}
-                              className="mt-1 text-white"
-                              required
-                            />
-                          </div>
-                          
-                          <div>
-                            <Label htmlFor="cardName" className="text-white">Cardholder Name</Label>
-                            <Input
-                              id="cardName"
-                              name="cardName"
-                              placeholder="John Smith"
-                              value={formData.cardName}
-                              onChange={handleInputChange}
-                              className="mt-1 text-white"
-                              required
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-4">
                             <div>
-                              <Label htmlFor="expiry" className="text-white">Expiration Date</Label>
+                              <Label htmlFor="cardNumber" className="text-gray-300">Card Number</Label>
                               <Input
-                                id="expiry"
-                                name="expiry"
-                                placeholder="MM/YY"
-                                value={formData.expiry}
+                                id="cardNumber"
+                                name="cardNumber"
+                                placeholder="1234 5678 9012 3456"
+                                className="bg-gray-800 border-gray-700 text-white"
+                                value={formData.cardNumber}
                                 onChange={handleInputChange}
-                                className="mt-1 text-white"
                                 required
                               />
                             </div>
+                            
                             <div>
-                              <Label htmlFor="cvv" className="text-white">CVV</Label>
+                              <Label htmlFor="cardName" className="text-gray-300">Cardholder Name</Label>
                               <Input
-                                id="cvv"
-                                name="cvv"
-                                placeholder="123"
-                                value={formData.cvv}
+                                id="cardName"
+                                name="cardName"
+                                placeholder="John Doe"
+                                className="bg-gray-800 border-gray-700 text-white"
+                                value={formData.cardName}
                                 onChange={handleInputChange}
-                                className="mt-1 text-white"
                                 required
                               />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label htmlFor="expiry" className="text-gray-300">Expiry Date</Label>
+                                <Input
+                                  id="expiry"
+                                  name="expiry"
+                                  placeholder="MM/YY"
+                                  className="bg-gray-800 border-gray-700 text-white"
+                                  value={formData.expiry}
+                                  onChange={handleInputChange}
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <Label htmlFor="cvv" className="text-gray-300">CVV</Label>
+                                <Input
+                                  id="cvv"
+                                  name="cvv"
+                                  placeholder="123"
+                                  className="bg-gray-800 border-gray-700 text-white"
+                                  value={formData.cvv}
+                                  onChange={handleInputChange}
+                                  required
+                                />
+                              </div>
                             </div>
                           </div>
                         </div>
                       )}
                       
-                      {/* PayPal / Venmo Fields */}
                       {(paymentMethod === 'paypal' || paymentMethod === 'venmo') && (
-                        <div>
-                          <Label htmlFor="email" className="text-white">Email Address</Label>
-                          <Input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="you@example.com"
-                            value={formData.email}
-                            onChange={handleInputChange}
-                            className="mt-1 text-white"
-                            required
-                          />
-                          <p className="text-sm text-gray-300 mt-2">
-                            You'll be redirected to {paymentMethod === 'paypal' ? 'PayPal' : 'Venmo'} to complete your payment.
-                          </p>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="email" className="text-gray-300">Email Address</Label>
+                            <Input
+                              id="email"
+                              name="email"
+                              type="email"
+                              placeholder="your@email.com"
+                              className="bg-gray-800 border-gray-700 text-white"
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              required
+                            />
+                          </div>
                         </div>
                       )}
-
-                      {/* Security Info */}
-                      <Accordion type="single" collapsible className="mt-6">
-                        <AccordionItem value="security">
-                          <AccordionTrigger className="text-white">Security Information</AccordionTrigger>
-                          <AccordionContent className="text-gray-300">
-                            <p className="text-sm">
-                              Your payment information is encrypted and securely transmitted. We do not store your full credit card details and use industry-standard security protocols.
-                            </p>
-                          </AccordionContent>
-                        </AccordionItem>
-                      </Accordion>
+                      
+                      <div className="flex items-center mt-8 mb-4">
+                        <Lock className="h-4 w-4 text-green-400 mr-2" />
+                        <span className="text-sm text-gray-300">Secure payment processing by Stripe</span>
+                      </div>
+                      
+                      <Button
+                        type="submit"
+                        className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                        disabled={isProcessing}
+                      >
+                        {isProcessing ? 'Processing...' : `Pay $${bookingDetails.totalAmount}`}
+                      </Button>
                     </form>
                   </CardContent>
-                  
-                  <CardFooter className="flex justify-between">
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate('/movies/' + bookingDetails.movieId)}
-                      className="text-white border-white hover:text-white"
-                    >
-                      Back
-                    </Button>
-                    <Button 
-                      onClick={handleSubmit}
-                      disabled={isProcessing}
-                      className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark text-white"
-                    >
-                      {isProcessing ? (
-                        <span className="flex items-center">
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Processing...
-                        </span>
-                      ) : (
-                        `Pay $${bookingDetails.totalAmount}`
-                      )}
-                    </Button>
-                  </CardFooter>
                 </Card>
               </div>
             </div>

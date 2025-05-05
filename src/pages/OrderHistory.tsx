@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { getUserOrders } from '@/services/order-service';
-import { OrderWithDetails } from '@/services/types';
+import { Order, OrderWithDetails } from '@/services/types';
 import { useAuth } from '@/context/AuthContext';
 
 const OrderHistory = () => {
@@ -49,25 +49,25 @@ const OrderHistory = () => {
               <div key={order.id} className="border rounded-lg p-4 bg-white shadow-sm">
                 <div className="flex flex-wrap justify-between items-start">
                   <div>
-                    <h2 className="text-xl font-semibold">{order.showtime?.movie?.title || 'Unknown Movie'}</h2>
-                    <p className="text-gray-600">{new Date(order.order_date).toLocaleDateString()}</p>
+                    <h2 className="text-xl font-semibold">{order.movieTitle || 'Unknown Movie'}</h2>
+                    <p className="text-gray-600">{new Date(order.orderDate || '').toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">Total: ${order.total_amount.toFixed(2)}</p>
+                    <p className="font-semibold">Total: ${order.totalPrice.toFixed(2)}</p>
                     <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                      order.payment_status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                      order.payment_status === 'Failed' ? 'bg-red-100 text-red-800' :
+                      order.paymentStatus === 'Completed' ? 'bg-green-100 text-green-800' : 
+                      order.paymentStatus === 'Failed' ? 'bg-red-100 text-red-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {order.payment_status}
+                      {order.paymentStatus || 'Pending'}
                     </span>
                   </div>
                 </div>
                 
                 <div className="mt-4 border-t pt-4">
                   <p><span className="font-medium">Tickets:</span> {order.seats}</p>
-                  <p><span className="font-medium">Theater:</span> {order.showtime?.theater?.name || 'Unknown'}</p>
-                  <p><span className="font-medium">Showtime:</span> {order.showtime ? `${order.showtime.date} at ${order.showtime.time}` : 'Unknown'}</p>
+                  <p><span className="font-medium">Theater:</span> {order.theater}</p>
+                  <p><span className="font-medium">Showtime:</span> {order.date} at {order.showtime}</p>
                 </div>
               </div>
             ))}

@@ -7,18 +7,20 @@ import MovieSection from '@/components/home/MovieSection';
 import BenefitsSection from '@/components/home/BenefitsSection';
 import { useToast } from '@/hooks/use-toast';
 import { getNowPlayingMovies, getUpcomingMovies } from '@/services/movie-service';
+import { Movie } from '@/services/types';
 
-interface Movie {
-  id: string; // Changed to string to match Supabase
+// Define the internal Movie type that matches what MovieSection expects
+interface MovieCardData {
+  id: string;
   title: string;
-  image_path: string | null;
-  rating: number | null;
+  imagePath: string;
+  rating?: number;
 }
 
 const Home = () => {
   const { toast } = useToast();
-  const [nowPlaying, setNowPlaying] = useState<Movie[]>([]);
-  const [upcoming, setUpcoming] = useState<Movie[]>([]);
+  const [nowPlaying, setNowPlaying] = useState<MovieCardData[]>([]);
+  const [upcoming, setUpcoming] = useState<MovieCardData[]>([]);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
@@ -29,8 +31,8 @@ const Home = () => {
           getUpcomingMovies()
         ]);
         
-        setNowPlaying(nowPlayingMovies);
-        setUpcoming(upcomingMovies);
+        setNowPlaying(transformMovies(nowPlayingMovies));
+        setUpcoming(transformMovies(upcomingMovies));
       } catch (error) {
         console.error('Error fetching movies:', error);
         toast({
@@ -46,13 +48,13 @@ const Home = () => {
     fetchMovies();
   }, [toast]);
   
-  // Transform Supabase data to match MovieSection component props
-  const transformMovies = (movies: Movie[]) => {
+  // Transform API data to match MovieSection component props
+  const transformMovies = (movies: Movie[]): MovieCardData[] => {
     return movies.map(movie => ({
       id: movie.id,
       title: movie.title,
-      imagePath: movie.image_path || '/placeholder.svg',
-      rating: movie.rating || undefined
+      imagePath: movie.imagePath || '/placeholder.svg',
+      rating: movie.rating
     }));
   };
   
@@ -70,7 +72,7 @@ const Home = () => {
           <MovieSection
             title="Now Playing"
             icon={<Film className="mr-2" />}
-            movies={transformMovies(nowPlaying)}
+            movies={nowPlaying}
             viewAllPath="/movies/now-playing"
           />
           
@@ -78,7 +80,7 @@ const Home = () => {
           <MovieSection
             title="Coming Soon"
             icon={<Calendar className="mr-2" />}
-            movies={transformMovies(upcoming)}
+            movies={upcoming}
             viewAllPath="/movies/upcoming"
             bgClass="bg-gray-50"
           />

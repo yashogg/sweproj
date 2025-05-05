@@ -13,7 +13,7 @@ const UserProfile = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Profile form state - using profile data instead of user data
+  // Profile form state - using profile data
   const [profileData, setProfileData] = useState({
     name: profile?.name || '',
     email: user?.email || '',

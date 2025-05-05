@@ -5,7 +5,7 @@ import { getLocalData, setLocalData, generateId } from './local-storage-service'
 export async function getMovieReviews(movieId: string): Promise<Review[]> {
   try {
     const reviews = getLocalData<Review[]>('reviews', []);
-    return reviews.filter(review => review.movie_id === movieId);
+    return reviews.filter(review => review.movieId === movieId);
   } catch (error) {
     console.error('Error fetching movie reviews:', error);
     throw error;
@@ -15,21 +15,21 @@ export async function getMovieReviews(movieId: string): Promise<Review[]> {
 export async function getUserReview(movieId: string, userId: string): Promise<Review | null> {
   try {
     const reviews = getLocalData<Review[]>('reviews', []);
-    return reviews.find(review => review.movie_id === movieId && review.user_id === userId) || null;
+    return reviews.find(review => review.movieId === movieId && review.userId === userId) || null;
   } catch (error) {
     console.error('Error fetching user review:', error);
     throw error;
   }
 }
 
-export async function addReview(review: Omit<Review, 'id' | 'created_at'>): Promise<Review> {
+export async function addReview(review: Omit<Review, 'id' | 'date'>): Promise<Review> {
   try {
     const reviews = getLocalData<Review[]>('reviews', []);
     
     const newReview: Review = {
       ...review,
       id: generateId(),
-      created_at: new Date().toISOString()
+      date: new Date().toISOString()
     };
     
     reviews.push(newReview);
@@ -84,7 +84,7 @@ export function reviewToReviewItem(review: Review, userName: string = "User"): R
     user: userName,
     rating: review.rating,
     comment: review.comment || "",
-    date: review.created_at
+    date: review.date
   };
 }
 
@@ -95,7 +95,7 @@ export async function getMovieReviewItems(movieId: string): Promise<ReviewItem[]
     const profiles = getLocalData('profiles', []);
     
     return reviews.map(review => {
-      const profile = profiles.find(p => p.id === review.user_id);
+      const profile = profiles.find(p => p.id === review.userId);
       const userName = profile?.name || "Anonymous User";
       
       return reviewToReviewItem(review, userName);

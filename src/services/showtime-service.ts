@@ -1,5 +1,6 @@
-import { Showtime, ShowtimeWithDetails } from '../services/types';
-import { getLocalData, setLocalData, initializeLocalData } from '../services/local-storage-service';
+
+import { Showtime, ShowtimeWithDetails } from './types';
+import { getLocalData, setLocalData, initializeLocalData } from './local-storage-service';
 
 // Initialize local data if needed
 initializeLocalData();
@@ -12,7 +13,7 @@ export async function getShowtimes(movieId?: string): Promise<ShowtimeWithDetail
     const today = new Date().toISOString().split('T')[0];
     const filteredShowtimes = showtimes.filter(showtime => {
       const isInFuture = showtime.date >= today;
-      return isInFuture && (!movieId || showtime.movie_id === movieId);
+      return isInFuture && (!movieId || showtime.movieId === movieId);
     });
     
     return filteredShowtimes;
@@ -33,7 +34,7 @@ export async function getShowtimeById(id: string): Promise<ShowtimeWithDetails |
   }
 }
 
-export async function addShowtime(showtime: Omit<Showtime, 'id' | 'created_at'>): Promise<Showtime> {
+export async function addShowtime(showtime: Omit<Showtime, 'id'>): Promise<Showtime> {
   try {
     const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
     
@@ -43,8 +44,7 @@ export async function addShowtime(showtime: Omit<Showtime, 'id' | 'created_at'>)
     // Create the new showtime
     const newShowtime = {
       ...showtime,
-      id: newId,
-      created_at: new Date().toISOString()
+      id: newId
     };
     
     // Add to showtimes

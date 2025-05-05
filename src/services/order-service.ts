@@ -1,6 +1,6 @@
 
-import { Order, OrderWithDetails } from '../services/types';
-import { getLocalData, setLocalData, generateId } from '../services/local-storage-service';
+import { Order, OrderWithDetails, Showtime, ShowtimeWithDetails } from './types';
+import { getLocalData, setLocalData, generateId } from './local-storage-service';
 import { getShowtimeById } from './showtime-service';
 
 export async function getUserOrders(userId: string): Promise<OrderWithDetails[]> {
@@ -8,10 +8,14 @@ export async function getUserOrders(userId: string): Promise<OrderWithDetails[]>
     const orders = getLocalData<OrderWithDetails[]>('orders', []);
     
     // Filter orders by user ID
-    const userOrders = orders.filter(order => order.user_id === userId);
+    const userOrders = orders.filter(order => order.userId === userId);
     
     // Sort by order date, newest first
-    userOrders.sort((a, b) => new Date(b.order_date).getTime() - new Date(a.order_date).getTime());
+    userOrders.sort((a, b) => {
+      const dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
+      const dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
+      return dateB - dateA;
+    });
     
     return userOrders;
   } catch (error) {
@@ -31,14 +35,14 @@ export async function getOrderById(id: string): Promise<OrderWithDetails | null>
   }
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'order_date'>): Promise<Order> {
+export async function createOrder(order: Omit<Order, 'id' | 'orderDate'>): Promise<Order> {
   try {
     const orders = getLocalData<OrderWithDetails[]>('orders', []);
     
     // Get the showtime details
-    const showtime = await getShowtimeById(order.showtime_id);
+    const showtime = await getShowtimeById(order.showtimeId);
     if (!showtime) {
-      throw new Error(`Showtime with ID ${order.showtime_id} not found`);
+      throw new Error(`Showtime with ID ${order.showtimeId} not found`);
     }
     
     // Generate a new ID
@@ -48,7 +52,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_date'>): Prom
     const newOrder: OrderWithDetails = {
       ...order,
       id: newId,
-      order_date: new Date().toISOString(),
+      orderDate: new Date().toISOString(),
       showtime: showtime
     };
     
@@ -57,14 +61,16 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_date'>): Prom
     setLocalData('orders', orders);
     
     // Update available seats in the showtime
-    const updatedSeats = showtime.available_seats - order.seats;
-    if (updatedSeats >= 0) {
-      showtime.available_seats = updatedSeats;
-      const showtimes = getLocalData('showtimes', []);
-      const showtimeIndex = showtimes.findIndex(s => s.id === showtime.id);
-      if (showtimeIndex !== -1) {
-        showtimes[showtimeIndex] = showtime;
-        setLocalData('showtimes', showtimes);
+    if (typeof showtime.availableSeats === 'number') {
+      const updatedSeats = showtime.availableSeats - order.seats;
+      if (updatedSeats >= 0) {
+        showtime.availableSeats = updatedSeats;
+        const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+        const showtimeIndex = showtimes.findIndex(s => s.id === showtime.id);
+        if (showtimeIndex !== -1) {
+          showtimes[showtimeIndex] = showtime;
+          setLocalData('showtimes', showtimes);
+        }
       }
     }
     

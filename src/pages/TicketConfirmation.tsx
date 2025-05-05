@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { getOrderById } from '@/services/order-service';
 import { getShowtimeById } from '@/services/showtime-service';
-import { OrderWithDetails } from '@/services/types';
+import { Order, OrderWithDetails } from '@/services/types';
 
 const TicketConfirmation = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,9 +21,9 @@ const TicketConfirmation = () => {
       try {
         const orderData = await getOrderById(id);
         if (orderData) {
-          // Fetch the showtime details including movie and theater
-          if (orderData.showtime_id) {
-            const showtimeData = await getShowtimeById(orderData.showtime_id);
+          // Fetch the showtime details if needed
+          if (orderData.showtimeId) {
+            const showtimeData = await getShowtimeById(orderData.showtimeId);
             if (showtimeData) {
               setOrder({
                 ...orderData,
@@ -82,21 +82,21 @@ const TicketConfirmation = () => {
           <div className="p-6">
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-4">
-                {order.showtime?.movie?.title || 'Movie Title'}
+                {order.movieTitle || 'Movie Title'}
               </h2>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-gray-600">Date</p>
-                  <p className="font-medium">{order.showtime?.date || 'Date'}</p>
+                  <p className="font-medium">{order.date || 'Date'}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Time</p>
-                  <p className="font-medium">{order.showtime?.time || 'Time'}</p>
+                  <p className="font-medium">{order.showtime || 'Time'}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Theater</p>
-                  <p className="font-medium">{order.showtime?.theater?.name || 'Theater'}</p>
+                  <p className="font-medium">{order.theater || 'Theater'}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">Seats</p>
@@ -110,16 +110,16 @@ const TicketConfirmation = () => {
               <div className="flex justify-between">
                 <span>Status</span>
                 <span className={`px-2 py-1 text-xs rounded-full ${
-                  order.payment_status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                  order.payment_status === 'Failed' ? 'bg-red-100 text-red-800' : 
+                  order.paymentStatus === 'Completed' ? 'bg-green-100 text-green-800' : 
+                  order.paymentStatus === 'Failed' ? 'bg-red-100 text-red-800' : 
                   'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {order.payment_status}
+                  {order.paymentStatus || 'Pending'}
                 </span>
               </div>
               <div className="flex justify-between mt-2">
                 <span>Total Amount</span>
-                <span className="font-semibold">${order.total_amount.toFixed(2)}</span>
+                <span className="font-semibold">${order.totalPrice.toFixed(2)}</span>
               </div>
             </div>
             

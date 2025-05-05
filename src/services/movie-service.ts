@@ -51,7 +51,7 @@ export async function getMovieWithShowtimes(id: string): Promise<MovieWithShowti
     }
     
     const showtimes = getLocalData('showtimes', [])
-      .filter(showtime => showtime.movie_id === id);
+      .filter(showtime => showtime.movieId === id);
     
     return {
       ...movie,
@@ -75,15 +75,13 @@ export async function searchMovies(query: string): Promise<Movie[]> {
   }
 }
 
-export async function addMovie(movie: Omit<Movie, 'id' | 'created_at' | 'updated_at'>): Promise<Movie> {
+export async function addMovie(movie: Omit<Movie, 'id'>): Promise<Movie> {
   try {
     const movies = getLocalData<Movie[]>('movies', []);
     
     const newMovie: Movie = {
       ...movie,
-      id: generateId(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      id: generateId()
     };
     
     movies.push(newMovie);
@@ -107,8 +105,7 @@ export async function updateMovie(id: string, updates: Partial<Movie>): Promise<
     
     const updatedMovie = {
       ...movies[index],
-      ...updates,
-      updated_at: new Date().toISOString()
+      ...updates
     };
     
     movies[index] = updatedMovie;
@@ -134,12 +131,12 @@ export async function deleteMovie(id: string): Promise<void> {
     
     // Also remove related showtimes
     const showtimes = getLocalData('showtimes', []);
-    const filteredShowtimes = showtimes.filter(showtime => showtime.movie_id !== id);
+    const filteredShowtimes = showtimes.filter(showtime => showtime.movieId !== id);
     setLocalData('showtimes', filteredShowtimes);
     
     // Also remove related reviews
     const reviews = getLocalData('reviews', []);
-    const filteredReviews = reviews.filter(review => review.movie_id !== id);
+    const filteredReviews = reviews.filter(review => review.movieId !== id);
     setLocalData('reviews', filteredReviews);
   } catch (error) {
     console.error('Error deleting movie:', error);
