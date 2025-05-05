@@ -1,101 +1,82 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useToast } from '@/hooks/use-toast';
 
 interface ReviewFormProps {
-  onSubmit: (rating: number, comment: string) => void;
-  onCancel: () => void;
+  onSubmitReview: (rating: number, comment: string) => void;
 }
 
-const ReviewForm = ({ onSubmit, onCancel }: ReviewFormProps) => {
-  const { isAuthenticated } = useAuth();
+const ReviewForm = ({ onSubmitReview }: ReviewFormProps) => {
+  const [rating, setRating] = useState<number>(8);
+  const [comment, setComment] = useState<string>('');
   const { toast } = useToast();
-  const [reviewForm, setReviewForm] = useState({
-    rating: 5,
-    comment: ""
-  });
 
-  const handleSubmit = () => {
-    if (!isAuthenticated) {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (rating < 1 || rating > 10) {
       toast({
-        title: "Login Required",
-        description: "Please log in to submit a review",
+        title: "Invalid Rating",
+        description: "Please select a rating between 1 and 10",
         variant: "destructive"
       });
       return;
     }
-
-    if (reviewForm.comment.trim() === '') {
+    
+    if (!comment.trim()) {
       toast({
-        title: "Review Required",
-        description: "Please enter a review comment",
+        title: "Missing Comment",
+        description: "Please write a comment for your review",
         variant: "destructive"
       });
       return;
     }
-
-    onSubmit(reviewForm.rating, reviewForm.comment);
+    
+    onSubmitReview(rating, comment);
+    setComment('');
   };
 
   return (
-    <div className="border-b border-ticketeer-purple pb-6 mb-6">
-      <h3 className="font-bold text-white mb-4">Your Review</h3>
-      <div className="space-y-4">
-        <div>
-          <label className="block text-gray-300 mb-2">Rating (1-10)</label>
-          <Select
-            value={reviewForm.rating.toString()}
-            onValueChange={(value) => setReviewForm({...reviewForm, rating: parseInt(value)})}
-          >
-            <SelectTrigger className="w-full max-w-[200px]">
-              <SelectValue placeholder="Select Rating" />
-            </SelectTrigger>
-            <SelectContent>
-              {[...Array(10)].map((_, i) => (
-                <SelectItem key={i+1} value={(i+1).toString()}>
-                  {i+1} {i === 0 ? 'star' : 'stars'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div>
-          <label className="block text-gray-300 mb-2">Your Comments</label>
-          <textarea 
-            className="w-full bg-ticketeer-purple p-3 rounded text-white"
-            rows={4}
-            value={reviewForm.comment}
-            onChange={(e) => setReviewForm({...reviewForm, comment: e.target.value})}
-            placeholder="Share your thoughts about this movie..."
-          ></textarea>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button 
-            onClick={handleSubmit}
-            className="bg-ticketeer-yellow text-black hover:bg-yellow-400"
-          >
-            Submit Review
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
+    <form onSubmit={handleSubmit} className="mb-8">
+      <h3 className="text-lg font-medium mb-3">Write a Review</h3>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Rating (1-10)</label>
+        <div className="flex space-x-1">
+          {[...Array(10)].map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              onClick={() => setRating(index + 1)}
+              className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                index < rating ? 'bg-yellow-500 text-yellow-900' : 'bg-gray-700'
+              }`}
+            >
+              {index + 1}
+            </button>
+          ))}
         </div>
       </div>
-    </div>
+      
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1" htmlFor="comment">
+          Your Review
+        </label>
+        <textarea
+          id="comment"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="w-full p-2 bg-ticketeer-purple-darker text-white rounded-md"
+          rows={4}
+          placeholder="Share your thoughts about the movie..."
+        ></textarea>
+      </div>
+      
+      <Button type="submit" variant="default" className="w-full">
+        Submit Review
+      </Button>
+    </form>
   );
 };
 

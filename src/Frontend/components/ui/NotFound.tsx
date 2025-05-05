@@ -1,13 +1,10 @@
 
 interface NotFoundProps {
-  title?: string;
-  message?: string;
+  title: string;
+  message: string;
 }
 
-const NotFound = ({ 
-  title = "Not Found", 
-  message = "Sorry, we couldn't find what you're looking for." 
-}: NotFoundProps) => {
+const NotFound = ({ title, message }: NotFoundProps) => {
   return (
     <div className="min-h-[50vh] flex items-center justify-center">
       <div className="text-center">

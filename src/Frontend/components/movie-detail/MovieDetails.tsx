@@ -1,10 +1,10 @@
 
-import StatusBadge from './StatusBadge';
-import Synopsis from './Synopsis';
-import CastSection from './CastSection';
-import RatingsSection from './RatingsSection';
-import ReviewsSection from './ReviewsSection';
-import { ReviewItem } from '../../services/types';
+import StatusBadge from "./StatusBadge";
+import Synopsis from "./Synopsis";
+import CastSection from "./CastSection";
+import RatingsSection from "./RatingsSection";
+import ReviewsSection from "./ReviewsSection";
+import { ReviewItem } from "../../services/types";
 
 interface CastMember {
   name: string;
@@ -20,12 +20,12 @@ interface MovieDetailsProps {
   reviews: ReviewItem[];
 }
 
-const MovieDetails = ({ 
-  description, 
-  cast, 
-  rating, 
-  status, 
-  reviews 
+const MovieDetails = ({
+  description,
+  cast,
+  rating,
+  status,
+  reviews
 }: MovieDetailsProps) => {
   return (
     <div className="md:w-2/3">
