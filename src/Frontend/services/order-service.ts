@@ -20,6 +20,9 @@ export async function getUserOrders(userId: string): Promise<OrderWithDetails[]>
   }
 }
 
+// Alias for getUserOrders for compatibility
+export const getOrdersByUserId = getUserOrders;
+
 export async function getOrderById(id: string): Promise<OrderWithDetails | null> {
   try {
     const orders = getLocalData<OrderWithDetails[]>('orders', []);

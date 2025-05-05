@@ -15,6 +15,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (email: string, password: string, name: string) => Promise<void>;
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   isAuthenticated: false,
   isAdmin: false,
+  isLoading: false,
   login: async () => {},
   logout: () => {},
   register: async () => {},
@@ -53,6 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
+      setIsLoading(true);
       const users = getLocalData<User[]>('users', []);
       const user = users.find(u => u.email === email);
       
@@ -79,11 +82,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: 'destructive',
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const register = async (email: string, password: string, name: string) => {
     try {
+      setIsLoading(true);
       const users = getLocalData<User[]>('users', []);
       
       // Check if user already exists
@@ -121,6 +127,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: 'destructive',
       });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -138,6 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     user,
     isAuthenticated: !!user,
     isAdmin: !!user?.isAdmin,
+    isLoading,
     login,
     logout,
     register,

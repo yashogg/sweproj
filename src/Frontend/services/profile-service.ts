@@ -12,6 +12,9 @@ export async function getUserProfile(userId: string): Promise<Profile | null> {
   }
 }
 
+// Alias for getUserProfile for compatibility
+export const getProfile = getUserProfile;
+
 export async function updateUserProfile(userId: string, updates: Partial<Profile>): Promise<Profile | null> {
   try {
     const profiles = getLocalData<Profile[]>('profiles', []);
@@ -49,6 +52,9 @@ export async function updateUserProfile(userId: string, updates: Partial<Profile
     throw error;
   }
 }
+
+// Alias for updateUserProfile for compatibility
+export const updateProfile = updateUserProfile;
 
 export async function getAllProfiles(): Promise<Profile[]> {
   try {
