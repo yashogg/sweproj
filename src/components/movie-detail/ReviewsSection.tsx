@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ReviewForm from './ReviewForm';
-import ReviewItem from '../movie-detail/ReviewItem';
+import ReviewItem from './ReviewItem';
 import { ReviewItem as ReviewItemType } from '@/services/types';
 
 interface ReviewsSectionProps {
