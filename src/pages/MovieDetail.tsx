@@ -6,6 +6,7 @@ import MovieDetails from '../components/movie-detail/MovieDetails';
 import BookingForm from '../components/movie-detail/BookingForm';
 import { getMovie, getMovieWithDetails } from '../services/api.service';
 import { Movie, ShowtimeWithDetails, ReviewItem } from '../services/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const MovieDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,6 +88,7 @@ const MovieDetail = () => {
       {/* Hero Banner */}
       <MovieHero 
         title={movie.title}
+        tagline="" // Adding the required tagline prop
         releaseDate={movie.releaseDate || ''}
         duration={movie.duration ? `${movie.duration} min` : ''}
         genres={movie.genre ? movie.genre.split('/') : []}
