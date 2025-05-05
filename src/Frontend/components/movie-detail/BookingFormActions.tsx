@@ -66,11 +66,11 @@ const BookingFormActions = ({
 
     // Store booking details in session storage
     const bookingDetails = {
-      movieId,
-      movieTitle,
+      movie_id: movieId,
+      movieTitle,  // Keep this for display compatibility
       theater: selectedTheater,
       showtime: selectedShowtime,
-      showtimeId: selectedShowtimeId,
+      showtime_id: selectedShowtimeId,
       date: selectedDate,
       seats: seatCount,
       ticketPrice,

@@ -3,56 +3,55 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
+import { getOrderById } from '../services/order-service';
 import { format, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Download, Home, Ticket, Calendar, Clock, MapPin, User } from 'lucide-react';
-
-interface TicketDetails {
-  id: string;
-  movieTitle: string;
-  theater: string;
-  screen: string;
-  date: string;
-  time: string;
-  seats: string[];
-  amount: string;
-  barcode: string;
-  purchaseDate: string;
-  poster?: string;
-}
+import { OrderWithDetails } from '../services/types';
 
 const TicketConfirmation = () => {
   const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
-  const [ticketDetails, setTicketDetails] = useState<TicketDetails | null>(null);
+  const [order, setOrder] = useState<OrderWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Retrieve ticket details from sessionStorage
-    const ticketDetailsStr = sessionStorage.getItem('ticketDetails');
-    
-    if (ticketDetailsStr) {
+    const fetchOrder = async () => {
+      if (!id) {
+        toast({
+          title: "Error",
+          description: "No ticket ID provided",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       try {
-        const details = JSON.parse(ticketDetailsStr);
-        setTicketDetails(details);
+        const orderData = await getOrderById(id);
+        if (orderData) {
+          setOrder(orderData);
+        } else {
+          toast({
+            title: "Ticket Not Found",
+            description: "We couldn't find your ticket details",
+            variant: "destructive"
+          });
+        }
       } catch (error) {
-        console.error('Error parsing ticket details:', error);
+        console.error('Error fetching ticket details:', error);
         toast({
           title: "Error",
           description: "Unable to load ticket details",
           variant: "destructive"
         });
+      } finally {
+        setLoading(false);
       }
-    } else {
-      toast({
-        title: "Ticket Not Found",
-        description: "We couldn't find your ticket details",
-        variant: "destructive"
-      });
-    }
+    };
     
-    setLoading(false);
+    fetchOrder();
   }, [id, toast]);
 
   const handleDownload = () => {
@@ -87,7 +86,7 @@ const TicketConfirmation = () => {
     );
   }
 
-  if (!ticketDetails) {
+  if (!order || !order.showtime) {
     return (
       <Layout title="Ticket Not Found">
         <div className="min-h-[60vh] flex flex-col items-center justify-center">
@@ -111,6 +110,16 @@ const TicketConfirmation = () => {
     );
   }
 
+  const showtime = order.showtime;
+  const movie = showtime?.movie;
+  const theater = showtime?.theater;
+  
+  // Generate a barcode-like ID for display
+  const barcode = `T${order.id.substring(0, 16).toUpperCase()}`;
+  
+  // Create an array for seats display (dummy)
+  const seatsArray = Array.from({ length: order.seats }, (_, i) => `A${i + 1}`);
+
   return (
     <Layout title="Ticket Confirmation">
       <div className="container mx-auto py-10 px-4">
@@ -133,12 +142,12 @@ const TicketConfirmation = () => {
           <div className="bg-ticketeer-purple px-6 py-4">
             <div className="flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-white">{ticketDetails.movieTitle}</h2>
-                <p className="text-gray-200">{ticketDetails.theater} • {ticketDetails.screen}</p>
+                <h2 className="text-2xl font-bold text-white">{movie?.title || "Movie"}</h2>
+                <p className="text-gray-200">{theater?.name || "Theater"} • {theater?.location?.split(',')[0] || "Screen"}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-200">Ticket #</p>
-                <p className="font-mono font-medium text-white">{ticketDetails.id.substr(0, 8).toUpperCase()}</p>
+                <p className="font-mono font-medium text-white">{order.id.substr(0, 8).toUpperCase()}</p>
               </div>
             </div>
           </div>
@@ -162,14 +171,14 @@ const TicketConfirmation = () => {
                     <Calendar className="h-4 w-4 mr-1" /> Date
                   </p>
                   <p className="text-white font-medium">
-                    {format(parseISO(ticketDetails.date), 'EEEE, MMM d, yyyy')}
+                    {format(parseISO(showtime.date), 'EEEE, MMM d, yyyy')}
                   </p>
                 </div>
                 <div>
                   <p className="text-gray-400 flex items-center text-sm">
                     <Clock className="h-4 w-4 mr-1" /> Time
                   </p>
-                  <p className="text-white font-medium">{ticketDetails.time}</p>
+                  <p className="text-white font-medium">{showtime.time}</p>
                 </div>
               </div>
               
@@ -177,7 +186,7 @@ const TicketConfirmation = () => {
                 <p className="text-gray-400 flex items-center text-sm">
                   <MapPin className="h-4 w-4 mr-1" /> Location
                 </p>
-                <p className="text-white font-medium">{ticketDetails.theater}</p>
+                <p className="text-white font-medium">{theater?.location || "Theater location"}</p>
               </div>
               
               <div>
@@ -185,7 +194,7 @@ const TicketConfirmation = () => {
                   <User className="h-4 w-4 mr-1" /> Seats
                 </p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {ticketDetails.seats.map((seat, index) => (
+                  {seatsArray.map((seat, index) => (
                     <span key={index} className="bg-ticketeer-purple-darker text-white px-3 py-1 rounded-md text-sm font-medium">
                       {seat}
                     </span>
@@ -199,7 +208,7 @@ const TicketConfirmation = () => {
               <div className="bg-white p-4 rounded-lg">
                 {/* Simple barcode representation */}
                 <div className="h-24 w-48 flex items-end justify-center">
-                  {[...ticketDetails.barcode].map((char, i) => (
+                  {[...barcode].map((char, i) => (
                     <div 
                       key={i} 
                       className="w-1 mx-0.5 bg-black" 
@@ -210,7 +219,7 @@ const TicketConfirmation = () => {
                   ))}
                 </div>
                 <p className="text-center text-xs font-mono text-black mt-2">
-                  {ticketDetails.barcode}
+                  {barcode}
                 </p>
               </div>
               <p className="text-gray-400 text-xs mt-2 text-center">
@@ -226,12 +235,12 @@ const TicketConfirmation = () => {
             <div>
               <p className="text-gray-400 text-sm">Purchase Date</p>
               <p className="text-white">
-                {format(parseISO(ticketDetails.purchaseDate), 'MMM d, yyyy h:mm a')}
+                {format(parseISO(order.order_date), 'MMM d, yyyy h:mm a')}
               </p>
             </div>
             <div>
               <p className="text-gray-400 text-sm">Total Amount</p>
-              <p className="text-white font-bold">${ticketDetails.amount}</p>
+              <p className="text-white font-bold">${order.total_amount.toFixed(2)}</p>
             </div>
           </div>
         </div>

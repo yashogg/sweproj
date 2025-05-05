@@ -5,6 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { getOrderById } from '@/services/order-service';
 import { getShowtimeById } from '@/services/showtime-service';
 import { OrderWithDetails } from '@/services/types';
+import { format } from 'date-fns';
 
 const TicketConfirmation = () => {
   const { id } = useParams<{ id: string }>();

@@ -5,9 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
 import { getOrdersByUserId } from '../services/order-service';
-import { getShowtimeById } from '../services/showtime-service';
-import { getMovieById } from '../services/movie-service';
-import { OrderWithDetails, ShowtimeWithDetails, Movie } from '../services/types';
+import { OrderWithDetails } from '../services/types';
 
 // Date-fns
 import { format, parseISO } from 'date-fns';
@@ -33,34 +31,7 @@ const OrderHistory = () => {
       try {
         // Get all orders for the current user
         const userOrders = await getOrdersByUserId(user.id);
-        
-        // For each order, get the showtime and movie details
-        const ordersWithDetails = await Promise.all(
-          userOrders.map(async (order) => {
-            try {
-              const showtime = await getShowtimeById(order.showtime_id);
-              
-              if (showtime) {
-                const movie = await getMovieById(showtime.movie_id);
-                
-                return {
-                  ...order,
-                  showtime: {
-                    ...showtime,
-                    movie: movie || undefined
-                  }
-                };
-              }
-              
-              return order;
-            } catch (error) {
-              console.error(`Error fetching details for order ${order.id}:`, error);
-              return order;
-            }
-          })
-        );
-        
-        setOrders(ordersWithDetails);
+        setOrders(userOrders);
       } catch (error) {
         console.error('Error loading orders:', error);
         toast({
@@ -146,7 +117,7 @@ const OrderHistory = () => {
                         
                         <div className="text-right">
                           <div className="bg-ticketeer-yellow text-black px-3 py-1 rounded-full text-xs font-bold">
-                            {order.payment_status || "Unknown"}
+                            {order.payment_status || "Pending"}
                           </div>
                           <p className="text-gray-300 text-sm mt-1">
                             {format(parseISO(order.order_date), 'MMM dd, yyyy')}
