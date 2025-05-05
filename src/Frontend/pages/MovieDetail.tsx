@@ -9,12 +9,10 @@ import { initializeLocalData } from '../services/local-storage-service';
 
 // Import our components
 import MovieHero from '@/components/movie-detail/MovieHero';
-import BookingForm from '@/components/movie-detail/BookingForm';
-import MovieInfo from '@/components/movie-detail/MovieInfo';
-import Synopsis from '@/components/movie-detail/Synopsis';
-import CastSection from '@/components/movie-detail/CastSection';
-import RatingsSection from '@/components/movie-detail/RatingsSection';
-import ReviewsSection from '@/components/movie-detail/ReviewsSection';
+import MovieSidebar from '@/components/movie-detail/MovieSidebar';
+import MovieDetails from '@/components/movie-detail/MovieDetails';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import NotFound from '@/components/ui/NotFound';
 
 // Initialize mock data
 initializeLocalData();
@@ -56,9 +54,7 @@ const MovieDetail = () => {
   if (loading) {
     return (
       <Layout title="Loading...">
-        <div className="min-h-[50vh] flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ticketeer-purple"></div>
-        </div>
+        <LoadingSpinner />
       </Layout>
     );
   }
@@ -66,12 +62,10 @@ const MovieDetail = () => {
   if (!movie) {
     return (
       <Layout title="Movie Not Found">
-        <div className="min-h-[50vh] flex items-center justify-center">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold">Movie Not Found</h2>
-            <p className="mt-2">Sorry, we couldn't find the movie you're looking for.</p>
-          </div>
-        </div>
+        <NotFound 
+          title="Movie Not Found" 
+          message="Sorry, we couldn't find the movie you're looking for."
+        />
       </Layout>
     );
   }
@@ -121,45 +115,24 @@ const MovieDetail = () => {
       {/* Movie Details */}
       <section className="container mx-auto px-5 py-12">
         <div className="flex flex-col md:flex-row gap-8">
-          <div className="md:w-1/3">
-            {/* Ticket Booking Section */}
-            <BookingForm 
-              movieId={id || '1'} 
-              movieTitle={title} 
-              isUpcoming={isUpcoming}
-              showtimes={showtimes} // Passing ShowtimeWithDetails[] directly now
-            />
-
-            <MovieInfo 
-              director=""
-              studios={[]}
-            />
-          </div>
+          {/* Sidebar with Booking Form and Movie Info */}
+          <MovieSidebar 
+            movieId={id || '1'}
+            movieTitle={title}
+            isUpcoming={isUpcoming}
+            showtimes={showtimes}
+            director=""
+            studios={[]}
+          />
           
-          <div className="md:w-2/3">
-            {/* Status Badge */}
-            <div className="mb-6">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                isUpcoming 
-                  ? 'bg-blue-100 text-blue-800' 
-                  : 'bg-green-100 text-green-800'
-              }`}>
-                {movie.status}
-              </span>
-            </div>
-            
-            {/* Synopsis */}
-            <Synopsis description={description || ''} />
-            
-            {/* Cast Section */}
-            <CastSection cast={cast} />
-            
-            {/* Ratings */}
-            <RatingsSection userRating={rating || 0} />
-            
-            {/* Reviews Section */}
-            <ReviewsSection initialReviews={initialReviews} />
-          </div>
+          {/* Main content with Synopsis, Cast, Ratings, and Reviews */}
+          <MovieDetails 
+            description={description || ''}
+            cast={cast}
+            rating={rating || 0}
+            status={movie.status}
+            reviews={initialReviews}
+          />
         </div>
       </section>
     </Layout>
