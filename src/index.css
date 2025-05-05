@@ -3,90 +3,59 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 270 95% 10%;
-    --foreground: 0 0% 100%;
-
-    --card: 270 95% 10%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 270 95% 10%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 52 100% 50%;
-    --primary-foreground: 0 0% 0%;
-
-    --secondary: 270 62% 15%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 270 62% 15%;
-    --muted-foreground: 0 0% 75%;
-
-    --accent: 52 100% 50%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 270 62% 15%;
-    --input: 270 62% 15%;
-    --ring: 52 100% 50%;
-
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 270 95% 10%;
-    --foreground: 0 0% 100%;
-
-    --card: 270 95% 10%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 270 95% 10%;
-    --popover-foreground: 0 0% 100%;
-
-    --primary: 52 100% 50%;
-    --primary-foreground: 0 0% 0%;
-
-    --secondary: 270 62% 15%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 270 62% 15%;
-    --muted-foreground: 0 0% 75%;
-
-    --accent: 52 100% 50%;
-    --accent-foreground: 0 0% 0%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 270 62% 15%;
-    --input: 270 62% 15%;
-    --ring: 52 100% 50%;
-  }
+:root {
+  --ticketeer-purple: #6d28d9;
+  --ticketeer-purple-dark: #5b21b6;
+  --ticketeer-purple-darker: #4c1d95;
+  --ticketeer-yellow: #fbbf24;
+  --background: #0f172a;
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-ticketeer-purple-darker text-foreground font-montserrat;
-  }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: white;
+  background-color: var(--background);
 }
 
-@layer components {
-  .btn-primary {
-    @apply bg-ticketeer-yellow text-black font-semibold py-2 px-4 rounded shadow transition-colors;
-  }
-  
-  .btn-secondary {
-    @apply bg-transparent border border-ticketeer-yellow text-ticketeer-yellow hover:bg-ticketeer-purple-dark font-semibold py-2 px-4 rounded shadow transition-colors;
-  }
-  
-  .card-hover {
-    @apply transition-all hover:shadow-lg hover:-translate-y-1;
-  }
+/* Movie card hover effects */
+.movie-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.movie-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* Gradient overlays */
+.hero-overlay {
+  background: linear-gradient(to top, rgba(15, 23, 42, 1) 0%, rgba(15, 23, 42, 0.7) 50%, rgba(15, 23, 42, 0.5) 100%);
+}
+
+.poster-overlay {
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0) 100%);
+}
+
+/* Theater seat selection */
+.seat {
+  width: 30px;
+  height: 30px;
+  margin: 3px;
+  border-radius: 5px;
+  display: inline-block;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.seat-available {
+  background-color: var(--ticketeer-purple);
+}
+
+.seat-selected {
+  background-color: var(--ticketeer-yellow);
+}
+
+.seat-unavailable {
+  background-color: #374151;
+  cursor: not-allowed;
 }
