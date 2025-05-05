@@ -1,10 +1,9 @@
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import MovieHero from '../components/movie/MovieHero';
-import MovieDetails from '../components/movie/MovieDetails';
-import BookingForm from '../components/movie/BookingForm';
+import MovieHero from '../components/movie-detail/MovieHero';
+import MovieDetails from '../components/movie-detail/MovieDetails';
+import BookingForm from '../components/movie-detail/BookingForm';
 import { getMovie, getMovieWithDetails } from '../services/api.service';
 import { Movie, ShowtimeWithDetails, ReviewItem } from '../services/types';
 

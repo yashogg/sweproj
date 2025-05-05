@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import MovieCard from '../components/MovieCard';
+import MovieCard from '../components/movie-detail/MovieCard';
 import { getMovies, getNowPlayingMovies, getUpcomingMovies } from '../services/api.service';
 import { Movie } from '../services/types';
 
