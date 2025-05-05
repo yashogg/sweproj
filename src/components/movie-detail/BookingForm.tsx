@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -19,11 +18,7 @@ import { AlertCircle } from 'lucide-react';
 interface BookingFormProps {
   movieId: string;
   movieTitle: string;
-  showtimes?: {
-    id: number;
-    time: string;
-    date: string;
-  }[];
+  showtimes?: ShowtimeWithDetails[]; // Updated to accept ShowtimeWithDetails[]
   isUpcoming?: boolean;
 }
 

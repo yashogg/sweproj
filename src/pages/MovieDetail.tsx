@@ -162,7 +162,7 @@ const MovieDetail = () => {
               movieId={id || '1'} 
               movieTitle={movie.title} 
               isUpcoming={isUpcoming}
-              showtimes={showtimes}
+              showtimes={showtimes} // Passing ShowtimeWithDetails[] directly now
             />
 
             <MovieInfo 
