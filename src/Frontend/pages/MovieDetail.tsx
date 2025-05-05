@@ -132,6 +132,7 @@ const MovieDetail = () => {
             rating={rating || 0}
             status={movie.status}
             reviews={initialReviews}
+            movieId={id || '1'}
           />
         </div>
       </section>

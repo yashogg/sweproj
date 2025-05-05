@@ -4,28 +4,22 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ReviewForm from './ReviewForm';
 import ReviewItem from './ReviewItem';
-
-interface Review {
-  id: number;
-  user: string;
-  rating: number;
-  comment: string;
-  date: string;
-}
+import { ReviewItem as ReviewItemType } from '@/services/types';
 
 interface ReviewsSectionProps {
-  initialReviews: Review[];
+  initialReviews: ReviewItemType[];
+  movieId: string;
 }
 
-const ReviewsSection = ({ initialReviews }: ReviewsSectionProps) => {
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+const ReviewsSection = ({ initialReviews, movieId }: ReviewsSectionProps) => {
+  const [reviews, setReviews] = useState<ReviewItemType[]>(initialReviews);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const { toast } = useToast();
 
   const handleSubmitReview = (rating: number, comment: string) => {
     // In a real app, this would be an API call to save the review
-    const newReview = {
-      id: Math.floor(Math.random() * 1000),
+    const newReview: ReviewItemType = {
+      id: `review_${Date.now()}`,
       user: "CurrentUser", // In a real app, get this from auth context
       rating,
       comment,
@@ -64,16 +58,20 @@ const ReviewsSection = ({ initialReviews }: ReviewsSectionProps) => {
       )}
       
       <div className="space-y-6">
-        {reviews.map(review => (
-          <ReviewItem
-            key={review.id}
-            id={review.id}
-            user={review.user}
-            rating={review.rating}
-            comment={review.comment}
-            date={review.date}
-          />
-        ))}
+        {reviews.length === 0 ? (
+          <p className="text-gray-300 text-center py-4">No reviews yet. Be the first to leave a review!</p>
+        ) : (
+          reviews.map(review => (
+            <ReviewItem
+              key={review.id}
+              id={parseInt(review.id) || Math.floor(Math.random() * 1000)}
+              user={review.user}
+              rating={review.rating}
+              comment={review.comment}
+              date={review.date}
+            />
+          ))
+        )}
       </div>
     </div>
   );

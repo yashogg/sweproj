@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -7,12 +8,6 @@ import { initializeLocalData } from '@/services/local-storage-service';
 
 // Import our components
 import MovieHero from '@/components/movie-detail/MovieHero';
-import BookingForm from '@/components/movie-detail/BookingForm';
-import MovieInfo from '@/components/movie-detail/MovieInfo';
-import Synopsis from '@/components/movie-detail/Synopsis';
-import CastSection from '@/components/movie-detail/CastSection';
-import RatingsSection from '@/components/movie-detail/RatingsSection';
-import ReviewsSection from '@/components/movie-detail/ReviewsSection';
 import MovieSidebar from '@/components/movie-detail/MovieSidebar';
 import MovieDetails from '@/components/movie-detail/MovieDetails';
 
@@ -42,11 +37,10 @@ const nowPlayingMovie = {
   ],
   studios: ["Marvel Studios", "Columbia Pictures", "Pascal Pictures"],
   reviews: [
-    { id: 1, user: "MovieFan123", rating: 9, comment: "Absolutely loved it! The multiverse concept was executed perfectly.", date: "2021-12-20" },
-    { id: 2, user: "ComicBookGuy", rating: 10, comment: "Best Spider-Man movie ever. The callbacks to previous films were amazing.", date: "2021-12-19" },
-    { id: 3, user: "CriticEye", rating: 7, comment: "Good, but somewhat predictable. The fan service worked well though.", date: "2021-12-22" }
+    { id: "1", user: "MovieFan123", rating: 9, comment: "Absolutely loved it! The multiverse concept was executed perfectly.", date: "2021-12-20" },
+    { id: "2", user: "ComicBookGuy", rating: 10, comment: "Best Spider-Man movie ever. The callbacks to previous films were amazing.", date: "2021-12-19" },
+    { id: "3", user: "CriticEye", rating: 7, comment: "Good, but somewhat predictable. The fan service worked well though.", date: "2021-12-22" }
   ],
-  // We'll replace this with data from the database
   showtimes: []
 };
 
@@ -73,10 +67,9 @@ const upcomingMovie = {
   ],
   studios: ["Legendary Pictures", "Warner Bros. Pictures"],
   reviews: [
-    { id: 1, user: "SciFiLover", rating: 9, comment: "Can't wait to see this sequel! The first one was incredible.", date: "2023-06-15" },
-    { id: 2, user: "BookWorm", rating: 8, comment: "Hope they do justice to the second half of the book.", date: "2023-07-02" }
+    { id: "1", user: "SciFiLover", rating: 9, comment: "Can't wait to see this sequel! The first one was incredible.", date: "2023-06-15" },
+    { id: "2", user: "BookWorm", rating: 8, comment: "Hope they do justice to the second half of the book.", date: "2023-07-02" }
   ],
-  // We'll replace this with data from the database
   showtimes: []
 };
 
