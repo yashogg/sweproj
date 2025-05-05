@@ -9,10 +9,10 @@ import { initializeLocalData } from '../services/local-storage-service';
 
 // Import our components
 import MovieHero from '@/components/movie-detail/MovieHero';
-import MovieSidebar from '@/components/movie-detail/MovieSidebar';
-import MovieDetails from '@/components/movie-detail/MovieDetails';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import NotFound from '@/components/ui/NotFound';
+import MovieSidebar from '../components/movie-detail/MovieSidebar';
+import MovieDetails from '../components/movie-detail/MovieDetails';
+import LoadingSpinner from '../components/ui/LoadingSpinner';
+import NotFound from '../components/ui/NotFound';
 
 // Initialize mock data
 initializeLocalData();

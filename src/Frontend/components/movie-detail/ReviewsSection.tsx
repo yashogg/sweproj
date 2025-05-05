@@ -51,7 +51,7 @@ const ReviewsSection = ({ initialReviews }: ReviewsSectionProps) => {
       
       {showReviewForm && (
         <ReviewForm 
-          onSubmit={handleSubmitReview}
+          onSubmitReview={handleSubmitReview}
           onCancel={() => setShowReviewForm(false)}
         />
       )}

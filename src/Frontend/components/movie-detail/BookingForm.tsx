@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { getShowtimes } from '@/services/showtime-service';
-import { ShowtimeWithDetails } from '@/services/types';
+import { getShowtimes } from '../../services/showtime-service';
+import { ShowtimeWithDetails } from '../../services/types';
 
 // Import Components
 import TheaterSelector from './TheaterSelector';
