@@ -102,7 +102,7 @@ const Movies = () => {
                   key={movie.id}
                   id={movie.id}
                   title={movie.title}
-                  imagePath={movie.image_path || 'https://via.placeholder.com/300x450'}
+                  imagePath={movie.imagePath || 'https://via.placeholder.com/300x450'}
                   rating={movie.rating || 0}
                   status={movie.status}
                 />

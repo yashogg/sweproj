@@ -67,7 +67,7 @@ const OrderHistory = () => {
                 <div className="mt-4 border-t pt-4">
                   <p><span className="font-medium">Tickets:</span> {order.seats}</p>
                   <p><span className="font-medium">Theater:</span> {order.theater}</p>
-                  <p><span className="font-medium">Showtime:</span> {order.date} at {order.showtime}</p>
+                  <p><span className="font-medium">Showtime:</span> {order.date} at {order.showtimeDetails?.time || '-'}</p>
                 </div>
               </div>
             ))}

@@ -27,7 +27,7 @@ const TicketConfirmation = () => {
             if (showtimeData) {
               setOrder({
                 ...orderData,
-                showtime: showtimeData
+                showtimeDetails: showtimeData
               });
             } else {
               setOrder(orderData);
@@ -92,7 +92,9 @@ const TicketConfirmation = () => {
                 </div>
                 <div>
                   <p className="text-gray-600">Time</p>
-                  <p className="font-medium">{order.showtime || 'Time'}</p>
+                  <p className="font-medium">
+                    {order.showtimeDetails?.time || 'Time'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-gray-600">Theater</p>

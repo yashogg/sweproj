@@ -69,10 +69,11 @@ const Register = () => {
     try {
       setIsLoading(true);
       
+      // Updated to pass only the expected parameters
       await register(
         formData.email, 
         formData.password,
-        { name: formData.name, phone: formData.phone, address: formData.address }
+        formData.name
       );
       
       toast({

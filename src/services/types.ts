@@ -47,9 +47,16 @@ export interface Showtime {
   availableSeats: number | string[];
 }
 
-export interface ShowtimeWithDetails extends Omit<Showtime, 'theaterId'> {
+export interface ShowtimeWithDetails {
+  id: string;
+  movieId: string;
+  date: string;
+  time: string;
   theaterId?: string;
+  theaterName?: string;
   theater?: Theater;
+  price: number;
+  availableSeats: number | string[];
   movie?: Movie;
 }
 
@@ -60,7 +67,6 @@ export interface Order {
   movieId: string;
   movieTitle: string;
   showtimeId: string;
-  showtime: string; // Time display string
   date: string;
   theater: string; // Theater name string
   seats: number;
@@ -69,8 +75,8 @@ export interface Order {
   paymentStatus?: 'Completed' | 'Pending' | 'Failed';
 }
 
-export interface OrderWithDetails extends Omit<Order, 'showtime'> {
-  showtimeDetails?: ShowtimeWithDetails; // Changed from 'showtime' to avoid type clash
+export interface OrderWithDetails extends Order {
+  showtimeDetails?: ShowtimeWithDetails;
 }
 
 // Review types
