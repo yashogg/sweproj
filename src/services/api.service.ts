@@ -19,6 +19,12 @@ export const getMovies = getAllMovies;
 export const getMovie = getMovieById;
 export const getMovieWithDetails = getMovieWithShowtimes;
 
+// Expose showtime functionality through api service
+export const getShowtimes = async (movieId: string) => {
+  const movieWithShowtimes = await getMovieWithShowtimes(movieId);
+  return movieWithShowtimes?.showtimes || [];
+};
+
 // Filter functions
 export { getNowPlayingMovies, getUpcomingMovies };
 
@@ -30,7 +36,7 @@ export const login = async (email: string, password: string) => {
     id: 'user1',
     email,
     name: 'Test User',
-    isAdmin: email === 'admin@ticketeer.com'
+    isAdmin: email === 'admin@movieapp.com'
   };
 };
 

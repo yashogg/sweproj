@@ -5,8 +5,16 @@ import { useToast } from '@/hooks/use-toast';
 import { getLocalData, setLocalData } from '../services/local-storage-service';
 import { User } from '../services/types';
 
+interface Profile {
+  name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 interface AuthContextType {
   user: User | null;
+  profile: Profile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -18,6 +26,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
+  profile: null,
   isAuthenticated: false,
   isAdmin: false,
   isLoading: false,
@@ -31,6 +40,7 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,7 +50,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setProfile({
+          name: parsedUser.name,
+          email: parsedUser.email,
+          phone: parsedUser.phone,
+          address: parsedUser.address
+        });
       } catch (error) {
         console.error('Error parsing stored user:', error);
         localStorage.removeItem('currentUser');
@@ -62,6 +79,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       setUser(user);
+      setProfile({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address
+      });
       localStorage.setItem('currentUser', JSON.stringify(user));
       
       toast({
@@ -107,11 +130,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Log in the new user
       setUser(newUser);
+      setProfile({
+        name: newUser.name,
+        email: newUser.email
+      });
       localStorage.setItem('currentUser', JSON.stringify(newUser));
       
       toast({
         title: 'Registration Successful',
-        description: 'Welcome to Ticketeer! Your account has been created.',
+        description: 'Welcome to MovieApp! Your account has been created.',
       });
       
       navigate('/');
@@ -151,6 +178,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Update current user
         setUser(updatedUser);
+        setProfile({
+          name: updatedUser.name,
+          email: updatedUser.email,
+          phone: updatedUser.phone,
+          address: updatedUser.address
+        });
         localStorage.setItem('currentUser', JSON.stringify(updatedUser));
         
         toast({
@@ -174,6 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('currentUser');
     setUser(null);
+    setProfile(null);
     toast({
       title: 'Logged Out',
       description: 'You have been successfully logged out.',
@@ -183,6 +217,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     user,
+    profile,
     isAuthenticated: !!user,
     isAdmin: !!user?.isAdmin,
     isLoading,

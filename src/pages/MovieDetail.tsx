@@ -5,7 +5,7 @@ import Layout from '../components/layout/Layout';
 import MovieHero from '../components/movie/MovieHero';
 import MovieDetails from '../components/movie/MovieDetails';
 import BookingForm from '../components/movie/BookingForm';
-import { getMovieById, getShowtimes } from '../services/api.service';
+import { getMovie, getMovieWithDetails } from '../services/api.service';
 import { Movie, ShowtimeWithDetails, ReviewItem } from '../services/types';
 
 const MovieDetail = () => {
@@ -24,13 +24,15 @@ const MovieDetail = () => {
       
       try {
         // Fetch movie by ID
-        const movieData = await getMovieById(id);
+        const movieData = await getMovie(id);
         if (movieData) {
           setMovie(movieData);
           
-          // Fetch showtimes for this movie
-          const showtimesData = await getShowtimes(id);
-          setShowtimes(showtimesData);
+          // Fetch movie with showtimes
+          const movieWithDetails = await getMovieWithDetails(id);
+          if (movieWithDetails && movieWithDetails.showtimes) {
+            setShowtimes(movieWithDetails.showtimes);
+          }
         }
       } catch (error) {
         console.error('Error loading movie details:', error);
