@@ -229,6 +229,47 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          barcode: string
+          created_at: string | null
+          id: string
+          is_used: boolean | null
+          quantity: number
+          showtime_id: string | null
+          total_price: number
+          user_id: string | null
+        }
+        Insert: {
+          barcode: string
+          created_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          quantity: number
+          showtime_id?: string | null
+          total_price: number
+          user_id?: string | null
+        }
+        Update: {
+          barcode?: string
+          created_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          quantity?: number
+          showtime_id?: string | null
+          total_price?: number
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_showtime_id_fkey"
+            columns: ["showtime_id"]
+            isOneToOne: false
+            referencedRelation: "showtimes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

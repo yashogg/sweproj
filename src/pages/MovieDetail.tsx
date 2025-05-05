@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { getShowtimes } from '@/services/showtime-service';
 import { ShowtimeWithDetails } from '@/services/supabase-types';
+import { initializeLocalData } from '@/services/local-storage-service';
 
 // Import our components
 import MovieHero from '@/components/movie-detail/MovieHero';
@@ -13,6 +14,9 @@ import Synopsis from '@/components/movie-detail/Synopsis';
 import CastSection from '@/components/movie-detail/CastSection';
 import RatingsSection from '@/components/movie-detail/RatingsSection';
 import ReviewsSection from '@/components/movie-detail/ReviewsSection';
+
+// Initialize mock data
+initializeLocalData();
 
 // Sample movie data for now playing
 const nowPlayingMovie = {
@@ -157,7 +161,8 @@ const MovieDetail = () => {
             <BookingForm 
               movieId={id || '1'} 
               movieTitle={movie.title} 
-              isUpcoming={isUpcoming} 
+              isUpcoming={isUpcoming}
+              showtimes={showtimes}
             />
 
             <MovieInfo 

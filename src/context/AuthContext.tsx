@@ -1,15 +1,19 @@
 
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Session, User } from '@supabase/supabase-js';
-import { getUserProfile, updateUserProfile } from '@/services/profile-service';
 import { Profile } from '@/services/supabase-types';
 import { useToast } from '@/hooks/use-toast';
+import { getLocalData, setLocalData } from '@/services/local-storage-service';
+
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
 
 interface AuthContextType {
   user: User | null;
   profile: Profile | null;
-  session: Session | null;
+  session: any | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
@@ -24,90 +28,128 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
-  // Check for an existing session when the component mounts
+  // Check for existing user in localStorage on mount
   useEffect(() => {
-    // Set up authentication state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        // When auth state changes, load user profile if logged in
-        if (currentSession?.user) {
-          // Defer profile fetch to avoid Supabase auth listener deadlock
-          setTimeout(() => {
-            fetchUserProfile(currentSession.user.id);
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-        
-        setIsLoading(false);
-      }
-    );
-
-    // Check for an existing session
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
+    const checkLocalAuth = () => {
+      const localSession = getLocalData('session', null);
+      const localUser = getLocalData('user', null);
+      const localProfile = getLocalData('profile', null);
       
-      if (currentSession?.user) {
-        fetchUserProfile(currentSession.user.id);
+      if (localSession && localUser) {
+        setSession(localSession);
+        setUser(localUser);
+        setProfile(localProfile);
       }
       
       setIsLoading(false);
-    });
-    
-    // Clean up the subscription
-    return () => {
-      subscription.unsubscribe();
     };
+    
+    checkLocalAuth();
   }, []);
   
-  // Function to fetch user profile
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const userProfile = await getUserProfile(userId);
-      setProfile(userProfile);
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
-  
-  // Login with email and password
+  // Login with email and password (simplified for localStorage)
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      // In a real app, we would validate credentials against a backend
+      // For this frontend-only app, we'll just check if the user exists in localStorage
+      const users = getLocalData<User[]>('users', []);
+      const foundUser = users.find(u => u.email === email);
       
-      if (error) {
+      if (!foundUser) {
+        // Auto-create the user if they don't exist (for demo purposes)
+        const newUser = {
+          id: generateId(),
+          email,
+          name: email.split('@')[0]
+        };
+        
+        users.push(newUser);
+        setLocalData('users', users);
+        
+        // Create a profile
+        const newProfile = {
+          id: newUser.id,
+          name: newUser.name,
+          email: newUser.email,
+          phone: null,
+          address: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        const profiles = getLocalData<Profile[]>('profiles', []);
+        profiles.push(newProfile);
+        setLocalData('profiles', profiles);
+        
+        // Set user and profile
+        setUser(newUser);
+        setProfile(newProfile);
+        
+        // Create a fake session
+        const fakeSession = {
+          access_token: `fake_token_${Date.now()}`,
+          expires_at: Date.now() + 86400000 // 24 hours
+        };
+        
+        setSession(fakeSession);
+        setLocalData('session', fakeSession);
+        setLocalData('user', newUser);
+        setLocalData('profile', newProfile);
+        
         toast({
-          title: "Login failed",
-          description: error.message,
-          variant: "destructive",
+          title: "Account created",
+          description: `Welcome, ${newUser.name}!`,
         });
-        throw error;
+      } else {
+        // User exists, log them in
+        setUser(foundUser);
+        
+        // Get the profile
+        const profiles = getLocalData<Profile[]>('profiles', []);
+        const foundProfile = profiles.find(p => p.id === foundUser.id);
+        
+        if (foundProfile) {
+          setProfile(foundProfile);
+          setLocalData('profile', foundProfile);
+        }
+        
+        // Create a fake session
+        const fakeSession = {
+          access_token: `fake_token_${Date.now()}`,
+          expires_at: Date.now() + 86400000 // 24 hours
+        };
+        
+        setSession(fakeSession);
+        setLocalData('session', fakeSession);
+        setLocalData('user', foundUser);
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${foundUser.name || foundUser.email}!`,
+        });
       }
-      
-      // We don't need to set user/session here as the onAuthStateChange listener will handle it
-      toast({
-        title: "Login successful",
-        description: `Welcome back${data.user?.user_metadata?.name ? ', ' + data.user.user_metadata.name : ''}!`,
-      });
     } catch (error) {
       console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
       throw error;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Generate a simple ID for users
+  const generateId = (): string => {
+    return 'user_' + Math.random().toString(36).substring(2, 15);
   };
 
   // Register a new user
@@ -115,55 +157,62 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            phone,
-            address,
-          }
-        }
-      });
+      const users = getLocalData<User[]>('users', []);
       
-      if (error) {
+      // Check if user already exists
+      if (users.some(u => u.email === email)) {
         toast({
           title: "Registration failed",
-          description: error.message,
+          description: "A user with this email already exists",
           variant: "destructive",
         });
-        throw error;
+        throw new Error("User already exists");
       }
       
-      // We don't need to set user/session here as the onAuthStateChange listener will handle it
+      // Create the new user
+      const newUser = {
+        id: generateId(),
+        email,
+        name
+      };
+      
+      users.push(newUser);
+      setLocalData('users', users);
+      
+      // Create a profile
+      const newProfile = {
+        id: newUser.id,
+        name,
+        email,
+        phone,
+        address,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      
+      const profiles = getLocalData<Profile[]>('profiles', []);
+      profiles.push(newProfile);
+      setLocalData('profiles', profiles);
+      
+      // Set user and profile
+      setUser(newUser);
+      setProfile(newProfile);
+      
+      // Create a fake session
+      const fakeSession = {
+        access_token: `fake_token_${Date.now()}`,
+        expires_at: Date.now() + 86400000 // 24 hours
+      };
+      
+      setSession(fakeSession);
+      setLocalData('session', fakeSession);
+      setLocalData('user', newUser);
+      setLocalData('profile', newProfile);
+      
       toast({
         title: "Registration successful",
         description: "Your account has been created. Welcome to Ticketeer!",
       });
-      
-      // For demonstration purposes, let's manually set the user profile for the admin account
-      if (email === 'admin@ticketeer.com') {
-        setTimeout(async () => {
-          try {
-            if (data.user) {
-              await updateUserProfile(data.user.id, {
-                id: data.user.id,
-                name,
-                email,
-                phone,
-                address,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              });
-              console.log('Admin profile created successfully');
-            }
-          } catch (error) {
-            console.error('Error creating admin profile:', error);
-          }
-        }, 1000);
-      }
-      
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -177,18 +226,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     
     try {
-      const { error } = await supabase.auth.signOut();
+      // Clear auth data from state
+      setUser(null);
+      setProfile(null);
+      setSession(null);
       
-      if (error) {
-        toast({
-          title: "Logout failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        throw error;
-      }
+      // Clear auth data from localStorage
+      localStorage.removeItem('session');
+      localStorage.removeItem('user');
+      localStorage.removeItem('profile');
       
-      // We don't need to clear user/session here as the onAuthStateChange listener will handle it
       toast({
         title: "Logout successful",
         description: "You have been logged out.",
@@ -215,10 +262,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     
     try {
-      const updatedProfile = await updateUserProfile(user.id, data);
+      const profiles = getLocalData<Profile[]>('profiles', []);
+      const index = profiles.findIndex(p => p.id === user.id);
       
-      if (updatedProfile) {
+      if (index !== -1) {
+        // Update the profile
+        const updatedProfile = {
+          ...profiles[index],
+          ...data,
+          updated_at: new Date().toISOString()
+        };
+        
+        profiles[index] = updatedProfile;
+        setLocalData('profiles', profiles);
+        
+        // Update state
         setProfile(updatedProfile);
+        setLocalData('profile', updatedProfile);
+        
         toast({
           title: "Profile updated",
           description: "Your profile has been successfully updated.",

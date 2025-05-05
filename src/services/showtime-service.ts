@@ -1,81 +1,98 @@
 
-import { supabase } from '@/integrations/supabase/client';
 import { Showtime, ShowtimeWithDetails } from './supabase-types';
+import { getLocalData, setLocalData, initializeLocalData } from './local-storage-service';
+
+// Initialize local data if needed
+initializeLocalData();
 
 export async function getShowtimes(movieId?: string): Promise<ShowtimeWithDetails[]> {
-  let query = supabase
-    .from('showtimes')
-    .select('*, movies(*), theaters(*)')
-    .gte('date', new Date().toISOString().split('T')[0]); // Only future showtimes
-  
-  // If a movie ID is provided, filter showtimes for that movie
-  if (movieId) {
-    query = query.eq('movie_id', movieId);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
+  try {
+    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    
+    // Filter by movie ID if provided and only return future showtimes
+    const today = new Date().toISOString().split('T')[0];
+    const filteredShowtimes = showtimes.filter(showtime => {
+      const isInFuture = showtime.date >= today;
+      return isInFuture && (!movieId || showtime.movie_id === movieId);
+    });
+    
+    return filteredShowtimes;
+  } catch (error) {
     console.error('Error fetching showtimes:', error);
     throw error;
   }
-  
-  return data as ShowtimeWithDetails[];
 }
 
 export async function getShowtimeById(id: string): Promise<ShowtimeWithDetails | null> {
-  const { data, error } = await supabase
-    .from('showtimes')
-    .select('*, movies(*), theaters(*)')
-    .eq('id', id)
-    .single();
-  
-  if (error) {
+  try {
+    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    const showtime = showtimes.find(s => s.id === id) || null;
+    return showtime;
+  } catch (error) {
     console.error('Error fetching showtime:', error);
     return null;
   }
-  
-  return data as ShowtimeWithDetails;
 }
 
 export async function addShowtime(showtime: Omit<Showtime, 'id' | 'created_at'>): Promise<Showtime> {
-  const { data, error } = await supabase
-    .from('showtimes')
-    .insert([showtime])
-    .select()
-    .single();
-  
-  if (error) {
+  try {
+    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    
+    // Generate a new ID
+    const newId = `st_${Date.now()}`;
+    
+    // Create the new showtime
+    const newShowtime = {
+      ...showtime,
+      id: newId,
+      created_at: new Date().toISOString()
+    };
+    
+    // Add to showtimes
+    showtimes.push(newShowtime as ShowtimeWithDetails);
+    setLocalData('showtimes', showtimes);
+    
+    return newShowtime;
+  } catch (error) {
     console.error('Error adding showtime:', error);
     throw error;
   }
-  
-  return data as Showtime;
 }
 
 export async function updateShowtime(id: string, updates: Partial<Showtime>): Promise<Showtime> {
-  const { data, error } = await supabase
-    .from('showtimes')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .single();
-  
-  if (error) {
+  try {
+    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    
+    // Find the showtime to update
+    const index = showtimes.findIndex(s => s.id === id);
+    if (index === -1) {
+      throw new Error(`Showtime with ID ${id} not found`);
+    }
+    
+    // Update the showtime
+    const updatedShowtime = {
+      ...showtimes[index],
+      ...updates
+    };
+    
+    showtimes[index] = updatedShowtime;
+    setLocalData('showtimes', showtimes);
+    
+    return updatedShowtime;
+  } catch (error) {
     console.error('Error updating showtime:', error);
     throw error;
   }
-  
-  return data as Showtime;
 }
 
 export async function deleteShowtime(id: string): Promise<void> {
-  const { error } = await supabase
-    .from('showtimes')
-    .delete()
-    .eq('id', id);
-  
-  if (error) {
+  try {
+    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    
+    // Filter out the showtime to delete
+    const updatedShowtimes = showtimes.filter(s => s.id !== id);
+    setLocalData('showtimes', updatedShowtimes);
+  } catch (error) {
     console.error('Error deleting showtime:', error);
     throw error;
   }
