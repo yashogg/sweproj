@@ -1,116 +1,121 @@
 
-import { useState } from 'react';
-import { Filter, ChevronDown } from 'lucide-react';
-import Navigation from '../components/Navigation';
-import Footer from '../components/Footer';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import Layout from '../components/layout/Layout';
 import MovieCard from '../components/MovieCard';
-
-// Sample movie data
-const allMovies = [
-  { id: "1", title: "Spider-Man: No Way Home", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Spider-Man", rating: 8.4 },
-  { id: "2", title: "The Batman", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Batman", rating: 8.0 },
-  { id: "3", title: "Doctor Strange", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Dr+Strange", rating: 7.9 },
-  { id: "4", title: "Black Panther: Wakanda Forever", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Black+Panther", rating: 7.8 },
-  { id: "5", title: "Thor: Love and Thunder", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Thor", rating: 7.5 },
-  { id: "6", title: "Top Gun: Maverick", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Top+Gun", rating: 8.7 },
-  { id: "7", title: "Avatar: The Way of Water", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Avatar", rating: 8.1 },
-  { id: "8", title: "Black Adam", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Black+Adam", rating: 7.2 },
-  { id: "9", title: "Ant-Man: Quantumania", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Ant-Man", rating: 7.0 },
-  { id: "10", title: "Shazam! Fury of the Gods", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Shazam", rating: 6.9 },
-  { id: "11", title: "The Flash", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Flash", rating: 7.3 },
-  { id: "12", title: "Guardians of the Galaxy Vol. 3", imagePath: "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=Guardians", rating: 8.5 }
-];
+import { getMovies, getNowPlayingMovies, getUpcomingMovies } from '../services/api.service';
+import { Movie } from '../services/types';
 
 const Movies = () => {
-  const [movies, setMovies] = useState(allMovies);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'nowPlaying', 'upcoming'
   
-  const filters = ['All', 'Action', 'Adventure', 'Comedy', 'Drama', 'Sci-Fi'];
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('now-playing')) {
+      setActiveTab('nowPlaying');
+    } else if (path.includes('upcoming')) {
+      setActiveTab('upcoming');
+    } else {
+      setActiveTab('all');
+    }
+  }, [location.pathname]);
   
-  const handleFilterChange = (filter: string) => {
-    setActiveFilter(filter);
-    // In a real app, you would filter the movies based on the selected genre
-    // For now, we'll just simulate filtering
-    setMovies(allMovies);
+  useEffect(() => {
+    const fetchMovies = async () => {
+      setLoading(true);
+      try {
+        let movieData: Movie[];
+        
+        switch (activeTab) {
+          case 'nowPlaying':
+            movieData = await getNowPlayingMovies();
+            break;
+          case 'upcoming':
+            movieData = await getUpcomingMovies();
+            break;
+          default:
+            movieData = await getMovies();
+        }
+        
+        setMovies(movieData);
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMovies();
+  }, [activeTab]);
+  
+  const getTitle = () => {
+    switch (activeTab) {
+      case 'nowPlaying':
+        return 'Now Playing';
+      case 'upcoming':
+        return 'Coming Soon';
+      default:
+        return 'All Movies';
+    }
   };
-
+  
   return (
-    <div className="min-h-screen flex flex-col bg-movie-dark text-white">
-      <Navigation />
-      
-      <main className="flex-grow">
-        <div className="container mx-auto px-5 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Movies</h1>
-            
-            <div className="flex items-center space-x-2">
-              <button className="flex items-center bg-movie-light px-4 py-2 rounded">
-                <Filter className="w-4 h-4 mr-2" />
-                <span>Filters</span>
-              </button>
-              
-              <button className="flex items-center bg-movie-light px-4 py-2 rounded">
-                <span>Sort By: Popular</span>
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </div>
+    <Layout title={getTitle()}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">{getTitle()}</h1>
           
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-8">
-            {filters.map(filter => (
-              <button
-                key={filter}
-                className={`px-4 py-2 rounded-full text-sm ${
-                  activeFilter === filter 
-                    ? 'bg-movie-accent text-black' 
-                    : 'bg-movie-light text-white hover:bg-opacity-80'
-                }`}
-                onClick={() => handleFilterChange(filter)}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-          
-          {/* Movies Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
-            {movies.map(movie => (
-              <MovieCard 
-                key={movie.id}
-                id={movie.id}
-                title={movie.title}
-                imagePath={movie.imagePath}
-                rating={movie.rating}
-              />
-            ))}
-          </div>
-          
-          {/* Pagination */}
-          <div className="mt-10 flex justify-center">
-            <div className="flex space-x-2">
-              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-movie-light">
-                &lt;
-              </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-movie-accent text-black font-bold">
-                1
-              </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-movie-light">
-                2
-              </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-movie-light">
-                3
-              </button>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center bg-movie-light">
-                &gt;
-              </button>
-            </div>
+          <div className="flex border-b border-gray-200">
+            <button
+              className={`py-2 px-4 font-medium ${activeTab === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('all')}
+            >
+              All Movies
+            </button>
+            <button
+              className={`py-2 px-4 font-medium ${activeTab === 'nowPlaying' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('nowPlaying')}
+            >
+              Now Playing
+            </button>
+            <button
+              className={`py-2 px-4 font-medium ${activeTab === 'upcoming' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+              onClick={() => setActiveTab('upcoming')}
+            >
+              Coming Soon
+            </button>
           </div>
         </div>
-      </main>
-      
-      <Footer />
-    </div>
+        
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {movies.length > 0 ? (
+              movies.map((movie) => (
+                <MovieCard
+                  key={movie.id}
+                  id={movie.id}
+                  title={movie.title}
+                  imagePath={movie.image_path || 'https://via.placeholder.com/300x450'}
+                  rating={movie.rating || 0}
+                  status={movie.status}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-xl text-gray-500">No movies found</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 };
 

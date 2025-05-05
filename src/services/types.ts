@@ -1,85 +1,67 @@
 
-// Helper types for our data
-export interface Profile {
+// User types
+export interface User {
   id: string;
-  name: string | null;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-  created_at: string;
-  updated_at: string;
+  email: string;
+  name: string;
+  isAdmin: boolean;
 }
 
+// Movie types
 export interface Movie {
   id: string;
   title: string;
-  description: string | null;
-  image_path: string | null;
-  rating: number | null;
-  release_date: string | null;
-  genre: string | null;
-  cast_members: string | null;
-  duration: number | null;
+  description?: string;
+  image_path?: string;
+  release_date?: string;
+  duration?: number;
+  genre?: string;
+  cast_members?: string;
   status: 'Now Playing' | 'Upcoming' | 'Finished';
-  created_at: string;
-  updated_at: string;
+  rating?: number;
 }
 
-export interface Theater {
-  id: string;
-  name: string;
-  location: string;
-  seats_capacity: number;
-  created_at: string;
+export interface MovieWithShowtimes extends Movie {
+  showtimes?: ShowtimeWithDetails[];
 }
 
+// Showtime types
 export interface Showtime {
   id: string;
-  movie_id: string;
-  theater_id: string;
+  movieId: string;
   date: string;
   time: string;
+  theater: string;
   price: number;
-  available_seats: number;
-  created_at: string;
-  movie?: Movie;
-  theater?: Theater;
-}
-
-export interface Order {
-  id: string;
-  user_id: string | null;
-  showtime_id: string;
-  seats: number;
-  total_amount: number;
-  order_date: string;
-  payment_status: 'Pending' | 'Completed' | 'Failed' | null;
-}
-
-export interface Review {
-  id: string;
-  movie_id: string;
-  user_id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-}
-
-// Extended types with related data
-export interface MovieWithShowtimes extends Movie {
-  showtimes?: Showtime[];
+  availableSeats: string[];
 }
 
 export interface ShowtimeWithDetails extends Showtime {
   movie?: Movie;
-  theater?: Theater;
 }
 
-export interface OrderWithDetails extends Order {
-  showtime?: ShowtimeWithDetails;
+// Order types
+export interface Order {
+  id: string;
+  userId: string;
+  movieId: string;
+  movieTitle: string;
+  date: string;
+  showtime: string;
+  theater: string;
+  seats: string[];
+  totalPrice: number;
 }
 
-// UI specific interfaces for the review components
+// Review types
+export interface Review {
+  id: number;
+  user: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
+
 export interface ReviewItem {
   id: string;
   user: string;

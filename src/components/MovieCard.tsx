@@ -1,44 +1,53 @@
 
-import { Play } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface MovieCardProps {
-  id: string; // Changed from number to string to match Supabase data
+  id: string;
   title: string;
-  imagePath?: string;
+  imagePath: string;
   rating?: number;
+  status?: 'Now Playing' | 'Upcoming' | 'Finished';
 }
 
-const MovieCard = ({ id, title, imagePath, rating }: MovieCardProps) => {
+const MovieCard = ({ id, title, imagePath, rating, status }: MovieCardProps) => {
   return (
     <Link to={`/movies/${id}`} className="group">
-      <div className="relative overflow-hidden rounded-md bg-ticketeer-purple-dark aspect-[3/4]">
-        {imagePath ? (
-          <img 
-            src={imagePath} 
+      <div className="relative overflow-hidden rounded-lg shadow-md transition-transform duration-300 group-hover:-translate-y-1">
+        <div className="aspect-[2/3] relative">
+          <img
+            src={imagePath || 'https://via.placeholder.com/300x450'}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+            className="w-full h-full object-cover"
+            loading="lazy"
           />
-        ) : (
-          <div className="w-full h-full bg-ticketeer-purple-dark flex items-center justify-center p-4">
-            <h3 className="text-center font-medium text-white">{title}</h3>
-          </div>
-        )}
-        
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <div className="bg-ticketeer-yellow rounded-full p-3 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-            <Play className="w-6 h-6 text-black" />
-          </div>
+          
+          {/* Status badge */}
+          {status && (
+            <div className="absolute top-2 right-2">
+              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                status === 'Now Playing' 
+                  ? 'bg-green-500 text-white' 
+                  : status === 'Upcoming' 
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-500 text-white'
+              }`}>
+                {status}
+              </span>
+            </div>
+          )}
+          
+          {/* Rating badge */}
+          {rating && rating > 0 && (
+            <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full w-10 h-10 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">{rating}</span>
+            </div>
+          )}
         </div>
         
-        {rating && (
-          <div className="absolute top-2 right-2 bg-ticketeer-yellow text-black text-xs font-bold px-2 py-1 rounded">
-            {rating}/10
-          </div>
-        )}
+        <div className="p-3 bg-white">
+          <h3 className="font-medium text-gray-900 truncate">{title}</h3>
+        </div>
       </div>
-      
-      <h3 className="mt-2 font-medium text-sm line-clamp-2 text-white">{title}</h3>
     </Link>
   );
 };
