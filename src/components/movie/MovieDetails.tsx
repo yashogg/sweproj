@@ -4,7 +4,7 @@ import Synopsis from "./Synopsis";
 import CastSection from "./CastSection";
 import RatingsSection from "./RatingsSection";
 import ReviewsSection from "./ReviewsSection";
-import type { ReviewItem } from "@/services/types"; // Changed to a type-only import
+import type { ReviewItem } from "@/services/types"; // Type-only import
 
 interface CastMember {
   name: string;

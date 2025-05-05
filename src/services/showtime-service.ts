@@ -1,13 +1,14 @@
 
-import { Showtime, ShowtimeWithDetails } from './types';
+import { Showtime, ShowtimeWithDetails, Theater } from './types';
 import { getLocalData, setLocalData, initializeLocalData } from './local-storage-service';
+import { getTheaterById } from './theater-service';
 
 // Initialize local data if needed
 initializeLocalData();
 
 export async function getShowtimes(movieId?: string): Promise<ShowtimeWithDetails[]> {
   try {
-    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    const showtimes = getLocalData<Showtime[]>('showtimes', []);
     
     // Filter by movie ID if provided and only return future showtimes
     const today = new Date().toISOString().split('T')[0];
@@ -16,7 +17,23 @@ export async function getShowtimes(movieId?: string): Promise<ShowtimeWithDetail
       return isInFuture && (!movieId || showtime.movieId === movieId);
     });
     
-    return filteredShowtimes;
+    // Convert to ShowtimeWithDetails
+    const showtimesWithDetails: ShowtimeWithDetails[] = await Promise.all(
+      filteredShowtimes.map(async (showtime) => {
+        // Get theater details if available
+        let theater: Theater | undefined;
+        if (showtime.theaterId) {
+          theater = await getTheaterById(showtime.theaterId) || undefined;
+        }
+        
+        return {
+          ...showtime,
+          theater
+        };
+      })
+    );
+    
+    return showtimesWithDetails;
   } catch (error) {
     console.error('Error fetching showtimes:', error);
     throw error;
@@ -25,9 +42,26 @@ export async function getShowtimes(movieId?: string): Promise<ShowtimeWithDetail
 
 export async function getShowtimeById(id: string): Promise<ShowtimeWithDetails | null> {
   try {
-    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
-    const showtime = showtimes.find(s => s.id === id) || null;
-    return showtime;
+    const showtimes = getLocalData<Showtime[]>('showtimes', []);
+    const showtime = showtimes.find(s => s.id === id);
+    
+    if (!showtime) {
+      return null;
+    }
+    
+    // Get the theater details if available
+    let theater: Theater | undefined;
+    if (showtime.theaterId) {
+      theater = await getTheaterById(showtime.theaterId) || undefined;
+    }
+    
+    // Create the detailed showtime
+    const showtimeWithDetails: ShowtimeWithDetails = {
+      ...showtime,
+      theater
+    };
+    
+    return showtimeWithDetails;
   } catch (error) {
     console.error('Error fetching showtime:', error);
     return null;
@@ -36,19 +70,19 @@ export async function getShowtimeById(id: string): Promise<ShowtimeWithDetails |
 
 export async function addShowtime(showtime: Omit<Showtime, 'id'>): Promise<Showtime> {
   try {
-    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    const showtimes = getLocalData<Showtime[]>('showtimes', []);
     
     // Generate a new ID
     const newId = `st_${Date.now()}`;
     
     // Create the new showtime
-    const newShowtime = {
+    const newShowtime: Showtime = {
       ...showtime,
       id: newId
     };
     
     // Add to showtimes
-    showtimes.push(newShowtime as ShowtimeWithDetails);
+    showtimes.push(newShowtime);
     setLocalData('showtimes', showtimes);
     
     return newShowtime;
@@ -60,7 +94,7 @@ export async function addShowtime(showtime: Omit<Showtime, 'id'>): Promise<Showt
 
 export async function updateShowtime(id: string, updates: Partial<Showtime>): Promise<Showtime> {
   try {
-    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    const showtimes = getLocalData<Showtime[]>('showtimes', []);
     
     // Find the showtime to update
     const index = showtimes.findIndex(s => s.id === id);
@@ -86,7 +120,7 @@ export async function updateShowtime(id: string, updates: Partial<Showtime>): Pr
 
 export async function deleteShowtime(id: string): Promise<void> {
   try {
-    const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
+    const showtimes = getLocalData<Showtime[]>('showtimes', []);
     
     // Filter out the showtime to delete
     const updatedShowtimes = showtimes.filter(s => s.id !== id);

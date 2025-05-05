@@ -1,5 +1,5 @@
 
-import { Order, OrderWithDetails, Showtime, ShowtimeWithDetails } from './types';
+import { Order, OrderWithDetails, ShowtimeWithDetails } from './types';
 import { getLocalData, setLocalData, generateId } from './local-storage-service';
 import { getShowtimeById } from './showtime-service';
 
@@ -49,15 +49,20 @@ export async function createOrder(order: Omit<Order, 'id' | 'orderDate'>): Promi
     const newId = generateId();
     
     // Create the new order
-    const newOrder: OrderWithDetails = {
+    const newOrder: Order = {
       ...order,
       id: newId,
       orderDate: new Date().toISOString(),
-      showtime: showtime
+    };
+    
+    // Create the detailed version with showtime info
+    const newOrderWithDetails: OrderWithDetails = {
+      ...newOrder,
+      showtimeDetails: showtime
     };
     
     // Add to orders
-    orders.push(newOrder);
+    orders.push(newOrderWithDetails);
     setLocalData('orders', orders);
     
     // Update available seats in the showtime

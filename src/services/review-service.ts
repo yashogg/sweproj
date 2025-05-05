@@ -83,7 +83,7 @@ export function reviewToReviewItem(review: Review, userName: string = "User"): R
     id: review.id,
     user: userName,
     rating: review.rating,
-    comment: review.comment || "",
+    comment: review.comment,
     date: review.date
   };
 }

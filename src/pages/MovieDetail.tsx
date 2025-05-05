@@ -72,7 +72,7 @@ const MovieDetail = () => {
   ];
 
   // Parse cast members for display
-  const cast = movie.cast_members ? movie.cast_members.split(',').map(member => {
+  const cast = movie.castMembers ? movie.castMembers.split(',').map(member => {
     const [name, character] = member.split(' as ');
     return {
       name: name.trim(),
@@ -86,10 +86,10 @@ const MovieDetail = () => {
       {/* Hero Banner */}
       <MovieHero 
         title={movie.title}
-        releaseDate={movie.release_date || ''}
+        releaseDate={movie.releaseDate || ''}
         duration={movie.duration ? `${movie.duration} min` : ''}
         genres={movie.genre ? movie.genre.split('/') : []}
-        backdrop={movie.image_path || ''} 
+        backdrop={movie.imagePath || ''} 
       />
       
       {/* Movie Details */}

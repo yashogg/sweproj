@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
 import MovieCardWithStatus from '@/components/MovieCardWithStatus';
-import { getNowPlayingMovies } from '@/services/movie-service';
-import { Movie } from '@/services/types';
+import { getNowPlayingMovies } from '../services/movie-service';
+import { Movie } from '../services/types';
 
 const MoviesNowPlaying = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -58,7 +59,7 @@ const MoviesNowPlaying = () => {
                 key={movie.id}
                 id={movie.id}
                 title={movie.title}
-                imagePath={movie.image_path || '/placeholder.svg'}
+                imagePath={movie.imagePath || '/placeholder.svg'}
                 rating={movie.rating || 0}
                 status="Now Playing"
               />

@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import Layout from '@/components/layout/Layout';
 import MovieCardWithStatus from '@/components/MovieCardWithStatus';
-import { getUpcomingMovies } from '@/services/movie-service';
-import { useToast } from '@/hooks/use-toast';
-import { Movie } from '@/services/types';
+import { getUpcomingMovies } from '../services/movie-service';
+import { Movie } from '../services/types';
 
 const MoviesUpcoming = () => {
   const [movies, setMovies] = useState<Movie[]>([]);
@@ -19,7 +20,7 @@ const MoviesUpcoming = () => {
         console.error('Error fetching upcoming movies:', error);
         toast({
           title: "Error",
-          description: "Failed to load upcoming movies. Please try again.",
+          description: "Failed to load movies. Please try again.",
           variant: "destructive"
         });
       } finally {
@@ -47,7 +48,7 @@ const MoviesUpcoming = () => {
           </div>
         ) : movies.length === 0 ? (
           <div className="text-center py-10">
-            <h2 className="text-xl font-medium text-gray-600">No upcoming movies</h2>
+            <h2 className="text-xl font-medium text-gray-600">No upcoming movies scheduled</h2>
             <p className="text-gray-500 mt-2">Check back soon for new releases!</p>
           </div>
         ) : (
@@ -58,7 +59,7 @@ const MoviesUpcoming = () => {
                 key={movie.id}
                 id={movie.id}
                 title={movie.title}
-                imagePath={movie.image_path || '/placeholder.svg'}
+                imagePath={movie.imagePath || '/placeholder.svg'}
                 rating={movie.rating || 0}
                 status="Upcoming"
               />

@@ -15,7 +15,8 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [selectedShowtime, setSelectedShowtime] = useState<string>('');
-  const [selectedTheater, setSelectedTheater] = useState<string>('');
+  const [selectedTheaterId, setSelectedTheaterId] = useState<string>('');
+  const [selectedTheaterName, setSelectedTheaterName] = useState<string>('');
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   
   // Get unique dates from showtimes
@@ -23,32 +24,42 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
   
   // Get theaters for selected date
   const theaters = selectedDate
-    ? [...new Set(showtimes.filter(s => s.date === selectedDate).map(s => s.theater))]
+    ? [...new Set(showtimes
+        .filter(s => s.date === selectedDate)
+        .map(s => ({
+          id: s.theaterId || '',
+          name: s.theaterName
+        })))]
     : [];
   
   // Get showtimes for selected date and theater
-  const availableShowtimes = selectedDate && selectedTheater
-    ? showtimes.filter(s => s.date === selectedDate && s.theater === selectedTheater).map(s => s.time)
+  const availableShowtimes = selectedDate && selectedTheaterId
+    ? showtimes.filter(s => 
+        s.date === selectedDate && 
+        s.theaterId === selectedTheaterId
+      ).map(s => s.time)
     : [];
   
   // Get seats for selected showtime
-  const availableSeats = selectedDate && selectedTheater && selectedShowtime
+  const availableSeats = selectedDate && selectedTheaterId && selectedShowtime
     ? showtimes.find(
         s => s.date === selectedDate && 
-        s.theater === selectedTheater && 
+        s.theaterId === selectedTheaterId && 
         s.time === selectedShowtime
       )?.availableSeats || []
     : [];
   
   const handleDateChange = (date: string) => {
     setSelectedDate(date);
-    setSelectedTheater('');
+    setSelectedTheaterId('');
+    setSelectedTheaterName('');
     setSelectedShowtime('');
     setSelectedSeats([]);
   };
   
-  const handleTheaterChange = (theater: string) => {
-    setSelectedTheater(theater);
+  const handleTheaterChange = (theaterId: string, theaterName: string) => {
+    setSelectedTheaterId(theaterId);
+    setSelectedTheaterName(theaterName);
     setSelectedShowtime('');
     setSelectedSeats([]);
   };
@@ -67,25 +78,25 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
   };
   
   const handleProceedToCheckout = () => {
-    if (!selectedDate || !selectedTheater || !selectedShowtime || selectedSeats.length === 0) {
+    if (!selectedDate || !selectedTheaterId || !selectedShowtime || selectedSeats.length === 0) {
       return;
     }
     
     const selectedShowtimeObj = showtimes.find(
-      s => s.date === selectedDate && s.theater === selectedTheater && s.time === selectedShowtime
+      s => s.date === selectedDate && s.theaterId === selectedTheaterId && s.time === selectedShowtime
     );
     
     if (!selectedShowtimeObj) return;
     
-    // In a real app, we would use state management or context for this
-    // For now, we'll pass the data via location state
+    // Navigate to checkout with booking details
     navigate('/checkout', {
       state: {
         movieId,
         movieTitle,
         date: selectedDate,
-        theater: selectedTheater,
+        theater: selectedTheaterName,
         showtime: selectedShowtime,
+        showtimeId: selectedShowtimeObj.id,
         seats: selectedSeats,
         price: selectedShowtimeObj.price,
         totalPrice: selectedShowtimeObj.price * selectedSeats.length
@@ -141,15 +152,15 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
           <div className="flex flex-wrap gap-2">
             {theaters.map((theater) => (
               <button
-                key={theater}
+                key={theater.id}
                 className={`px-3 py-1 text-sm rounded-md ${
-                  selectedTheater === theater
+                  selectedTheaterId === theater.id
                     ? 'bg-blue-600 text-white'
                     : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
                 }`}
-                onClick={() => handleTheaterChange(theater)}
+                onClick={() => handleTheaterChange(theater.id, theater.name)}
               >
-                {theater}
+                {theater.name}
               </button>
             ))}
           </div>
@@ -157,7 +168,7 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
       )}
       
       {/* Showtime Selection */}
-      {selectedDate && selectedTheater && (
+      {selectedDate && selectedTheaterId && (
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Select Showtime</label>
           <div className="flex flex-wrap gap-2">
@@ -179,23 +190,27 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
       )}
       
       {/* Seat Selection */}
-      {selectedDate && selectedTheater && selectedShowtime && (
+      {selectedDate && selectedTheaterId && selectedShowtime && (
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">Select Seats</label>
           <div className="grid grid-cols-4 gap-2 mb-2">
-            {availableSeats.map((seat) => (
-              <button
-                key={seat}
-                className={`p-2 text-xs rounded-md ${
-                  selectedSeats.includes(seat)
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
-                onClick={() => handleSeatToggle(seat)}
-              >
-                {seat}
-              </button>
-            ))}
+            {Array.isArray(availableSeats) ? (
+              availableSeats.map((seat) => (
+                <button
+                  key={seat}
+                  className={`p-2 text-xs rounded-md ${
+                    selectedSeats.includes(seat.toString())
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleSeatToggle(seat.toString())}
+                >
+                  {seat}
+                </button>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm col-span-4">No seats available</p>
+            )}
           </div>
           {selectedSeats.length > 0 && (
             <div className="text-sm text-gray-600">
@@ -208,7 +223,7 @@ const BookingForm = ({ movieId, movieTitle, isUpcoming, showtimes }: BookingForm
       {/* Action Button */}
       <Button
         onClick={handleProceedToCheckout}
-        disabled={!selectedDate || !selectedTheater || !selectedShowtime || selectedSeats.length === 0}
+        disabled={!selectedDate || !selectedTheaterId || !selectedShowtime || selectedSeats.length === 0}
         className="w-full"
       >
         {selectedSeats.length > 0 

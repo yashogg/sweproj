@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -71,11 +70,9 @@ const Register = () => {
       setIsLoading(true);
       
       await register(
-        formData.name,
         formData.email, 
         formData.password,
-        formData.phone,
-        formData.address
+        { name: formData.name, phone: formData.phone, address: formData.address }
       );
       
       toast({

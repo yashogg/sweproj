@@ -14,33 +14,17 @@ export interface Movie {
   id: string;
   title: string;
   description?: string;
-  imagePath?: string; // Changed from image_path to camelCase
-  releaseDate?: string; // Changed from release_date to camelCase
+  imagePath?: string;
+  releaseDate?: string;
   duration?: number;
   genre?: string;
-  castMembers?: string; // Changed from cast_members to camelCase
+  castMembers?: string;
   status: 'Now Playing' | 'Upcoming' | 'Finished';
   rating?: number;
 }
 
 export interface MovieWithShowtimes extends Movie {
   showtimes?: ShowtimeWithDetails[];
-}
-
-// Showtime types
-export interface Showtime {
-  id: string;
-  movieId: string; // Consistently using camelCase
-  date: string;
-  time: string;
-  theater: string;
-  price: number;
-  availableSeats: number | string[]; // Handle both number of seats or array of seat IDs
-}
-
-export interface ShowtimeWithDetails extends Showtime {
-  movie?: Movie;
-  theater?: Theater;
 }
 
 // Theater type
@@ -51,31 +35,49 @@ export interface Theater {
   seatsCapacity: number;
 }
 
+// Showtime types
+export interface Showtime {
+  id: string;
+  movieId: string;
+  date: string;
+  time: string;
+  theaterId: string; // Changed from theater (string) to theaterId
+  theaterName: string; // Added theaterName as string
+  price: number;
+  availableSeats: number | string[];
+}
+
+export interface ShowtimeWithDetails extends Omit<Showtime, 'theaterId'> {
+  theaterId?: string;
+  theater?: Theater;
+  movie?: Movie;
+}
+
 // Order types
 export interface Order {
   id: string;
   userId: string;
   movieId: string;
   movieTitle: string;
-  showtime: string;
   showtimeId: string;
+  showtime: string; // Time display string
   date: string;
-  theater: string;
+  theater: string; // Theater name string
   seats: number;
   totalPrice: number;
   orderDate?: string;
   paymentStatus?: 'Completed' | 'Pending' | 'Failed';
 }
 
-export interface OrderWithDetails extends Order {
-  showtime?: ShowtimeWithDetails;
+export interface OrderWithDetails extends Omit<Order, 'showtime'> {
+  showtimeDetails?: ShowtimeWithDetails; // Changed from 'showtime' to avoid type clash
 }
 
 // Review types
 export interface Review {
   id: string;
-  movieId: string; // Changed from movie_id to camelCase
-  userId: string; // Changed from user_id to camelCase
+  movieId: string;
+  userId: string;
   rating: number;
   comment: string;
   date: string;
