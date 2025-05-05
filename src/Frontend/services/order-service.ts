@@ -57,7 +57,7 @@ export async function getOrderById(id: string): Promise<OrderWithDetails | null>
   }
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'order_date'>): Promise<Order> {
+export async function createOrder(order: Omit<Order, 'id' | 'order_date'>): Promise<OrderWithDetails> {
   try {
     const orders = getLocalData<Order[]>('orders', []);
     
@@ -98,6 +98,7 @@ export async function createOrder(order: Omit<Order, 'id' | 'order_date'>): Prom
       }
     }
     
+    // Return order with showtime details
     return {
       ...newOrder,
       showtime: {
