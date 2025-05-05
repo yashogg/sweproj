@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { getShowtimes } from '../services/showtime-service';
 import { getMovieById } from '../services/movie-service';
-import { ShowtimeWithDetails, MovieWithShowtimes } from '../services/types';
+import { ShowtimeWithDetails, MovieWithShowtimes, ReviewItem } from '../services/types';
 import { initializeLocalData } from '../services/local-storage-service';
 
 // Import our components
@@ -101,7 +101,7 @@ const MovieDetail = () => {
   }) : [];
   
   // Default reviews if none exist
-  const initialReviews = [
+  const initialReviews: ReviewItem[] = [
     { id: '1', user: 'MovieFan123', rating: 9, comment: 'Absolutely loved it!', date: new Date().toISOString() },
     { id: '2', user: 'CriticEye', rating: 7, comment: 'Good, but somewhat predictable.', date: new Date().toISOString() }
   ];

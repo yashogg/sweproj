@@ -76,3 +76,12 @@ export interface ShowtimeWithDetails extends Showtime {
 export interface OrderWithDetails extends Order {
   showtime?: ShowtimeWithDetails;
 }
+
+// UI specific interfaces for the review components
+export interface ReviewItem {
+  id: string;
+  user: string;
+  rating: number;
+  comment: string;
+  date: string;
+}
