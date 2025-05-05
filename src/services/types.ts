@@ -41,8 +41,8 @@ export interface Showtime {
   movieId: string;
   date: string;
   time: string;
-  theaterId: string; // Changed from theater (string) to theaterId
-  theaterName: string; // Added theaterName as string
+  theaterId: string;
+  theaterName: string;
   price: number;
   availableSeats: number | string[];
 }

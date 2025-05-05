@@ -42,30 +42,26 @@ export const initializeLocalData = (): void => {
       { 
         id: "1", 
         title: "Inception", 
-        image_path: "https://image.tmdb.org/t/p/w300/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg", 
+        imagePath: "https://image.tmdb.org/t/p/w300/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg", 
         rating: 8.8,
-        release_date: "2025-04-15",
+        releaseDate: "2025-04-15",
         description: "A thief who enters the dreams of others to steal their secrets from their subconscious.",
         genre: "Sci-Fi/Action",
-        cast_members: "Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page",
+        castMembers: "Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page",
         duration: 148,
-        status: "Now Playing",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        status: "Now Playing"
       },
       { 
         id: "2", 
         title: "The Shawshank Redemption", 
-        image_path: "https://image.tmdb.org/t/p/w300/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg", 
+        imagePath: "https://image.tmdb.org/t/p/w300/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg", 
         rating: 9.3,
-        release_date: "2025-03-20", 
+        releaseDate: "2025-03-20", 
         description: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
         genre: "Drama",
-        cast_members: "Tim Robbins, Morgan Freeman",
+        castMembers: "Tim Robbins, Morgan Freeman",
         duration: 142,
-        status: "Now Playing",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        status: "Now Playing"
       }
     ];
     
@@ -73,30 +69,26 @@ export const initializeLocalData = (): void => {
       { 
         id: "3", 
         title: "Dune: Part Two", 
-        image_path: "https://image.tmdb.org/t/p/w300/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg", 
+        imagePath: "https://image.tmdb.org/t/p/w300/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg", 
         rating: 8.5,
-        release_date: "2025-06-15",
+        releaseDate: "2025-06-15",
         description: "The sequel to the critically acclaimed sci-fi epic that continues the journey of Paul Atreides as he unites with the Fremen to seek revenge against the conspirators who destroyed his family.",
         genre: "Sci-Fi/Adventure",
-        cast_members: "Timothée Chalamet, Rebecca Ferguson, Zendaya",
+        castMembers: "Timothée Chalamet, Rebecca Ferguson, Zendaya",
         duration: 166,
-        status: "Upcoming",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        status: "Upcoming"
       },
       { 
         id: "4", 
         title: "The Batman", 
-        image_path: "https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg", 
+        imagePath: "https://image.tmdb.org/t/p/w300/74xTEgt7R36Fpooo50r9T25onhq.jpg", 
         rating: 8.4,
-        release_date: "2025-05-25",
+        releaseDate: "2025-05-25",
         description: "When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate the city's hidden corruption and question his family's involvement.",
         genre: "Action/Crime",
-        cast_members: "Robert Pattinson, Zoë Kravitz, Paul Dano",
+        castMembers: "Robert Pattinson, Zoë Kravitz, Paul Dano",
         duration: 176,
-        status: "Upcoming",
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        status: "Upcoming"
       }
     ];
     
@@ -111,22 +103,19 @@ export const initializeLocalData = (): void => {
         id: "theater1",
         name: "Lubbock",
         location: "123 Main St, Lubbock, TX",
-        seats_capacity: 150,
-        created_at: new Date().toISOString()
+        seatsCapacity: 150
       },
       {
         id: "theater2",
         name: "Amarillo",
         location: "456 Second St, Amarillo, TX",
-        seats_capacity: 120,
-        created_at: new Date().toISOString()
+        seatsCapacity: 120
       },
       {
         id: "theater3",
         name: "Levelland",
         location: "789 Third St, Levelland, TX",
-        seats_capacity: 90,
-        created_at: new Date().toISOString()
+        seatsCapacity: 90
       }
     ];
     setLocalData('theaters', theaters);
@@ -137,43 +126,43 @@ export const initializeLocalData = (): void => {
     const showtimes = [
       {
         id: "st1",
-        movie_id: "1",
-        theater_id: "theater1",
+        movieId: "1",
+        theaterId: "theater1",
+        theaterName: "Lubbock",
         date: "2025-05-25",
         time: "13:30",
         price: 12.99,
-        available_seats: 120,
-        created_at: new Date().toISOString()
+        availableSeats: 120
       },
       {
         id: "st2",
-        movie_id: "1",
-        theater_id: "theater2",
+        movieId: "1",
+        theaterId: "theater2",
+        theaterName: "Amarillo",
         date: "2025-05-25",
         time: "16:00",
         price: 14.99,
-        available_seats: 100,
-        created_at: new Date().toISOString()
+        availableSeats: 100
       },
       {
         id: "st3",
-        movie_id: "2",
-        theater_id: "theater3",
+        movieId: "2",
+        theaterId: "theater3",
+        theaterName: "Levelland",
         date: "2025-05-26",
         time: "18:30",
         price: 13.99,
-        available_seats: 80,
-        created_at: new Date().toISOString()
+        availableSeats: 80
       },
       {
         id: "st4",
-        movie_id: "3",
-        theater_id: "theater1",
+        movieId: "3",
+        theaterId: "theater1",
+        theaterName: "Lubbock",
         date: "2025-12-20",
         time: "14:00",
         price: 15.99,
-        available_seats: 150,
-        created_at: new Date().toISOString()
+        availableSeats: 150
       }
     ];
     setLocalData('showtimes', showtimes);
@@ -184,55 +173,51 @@ export const initializeLocalData = (): void => {
     const reviews = [
       {
         id: "rev1",
-        movie_id: "1",
-        user_id: "user1",
+        movieId: "1",
+        userId: "user1",
         rating: 9,
         comment: "Absolutely loved it! The concept was executed perfectly.",
-        created_at: new Date().toISOString()
+        date: new Date().toISOString()
       },
       {
         id: "rev2",
-        movie_id: "1",
-        user_id: "user2",
+        movieId: "1",
+        userId: "user2",
         rating: 10,
         comment: "Best movie ever. The visuals were amazing.",
-        created_at: new Date().toISOString()
+        date: new Date().toISOString()
       },
       {
         id: "rev3",
-        movie_id: "2",
-        user_id: "user1",
+        movieId: "2",
+        userId: "user1",
         rating: 8,
         comment: "A classic that still holds up today.",
-        created_at: new Date().toISOString()
+        date: new Date().toISOString()
       }
     ];
     setLocalData('reviews', reviews);
   }
   
-  // Initialize profiles if they don't exist
-  if (!localStorage.getItem('profiles')) {
-    const profiles = [
+  // Initialize users if they don't exist
+  if (!localStorage.getItem('users')) {
+    const users = [
       {
         id: "user1",
-        name: "John Doe",
-        email: "john@example.com",
-        phone: null,
-        address: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        name: "Admin User",
+        email: "admin@ticketeer.com",
+        isAdmin: true,
+        phone: "555-123-4567",
+        address: "123 Admin St."
       },
       {
         id: "user2",
-        name: "Jane Smith",
-        email: "jane@example.com",
-        phone: null,
-        address: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        name: "Regular User",
+        email: "user@example.com",
+        isAdmin: false
       }
     ];
-    setLocalData('profiles', profiles);
+    setLocalData('users', users);
   }
   
   // Initialize orders if they don't exist

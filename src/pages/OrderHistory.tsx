@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Layout from '@/components/layout/Layout';
 import { getUserOrders } from '@/services/order-service';
-import { Order, OrderWithDetails } from '@/services/types';
+import { OrderWithDetails } from '@/services/types';
 import { useAuth } from '@/context/AuthContext';
 
 const OrderHistory = () => {

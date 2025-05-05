@@ -4,8 +4,7 @@ import { getLocalData } from './local-storage-service';
 
 export async function getAllTheaters(): Promise<Theater[]> {
   try {
-    const theaters = getLocalData<Theater[]>('theaters', []);
-    return theaters;
+    return getLocalData<Theater[]>('theaters', []);
   } catch (error) {
     console.error('Error fetching theaters:', error);
     return [];

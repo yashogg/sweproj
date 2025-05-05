@@ -1,40 +1,30 @@
 
+import React from 'react';
+import { Star } from 'lucide-react';
+
 interface RatingsSectionProps {
-  userRating: number;
+  rating: number;
 }
 
-const RatingsSection = ({ userRating }: RatingsSectionProps) => {
-  const getColor = () => {
-    if (userRating >= 8) return 'text-green-500';
-    if (userRating >= 6) return 'text-yellow-500';
-    return 'text-red-500';
-  };
+const RatingsSection = ({ rating }: RatingsSectionProps) => {
+  // Convert rating to stars (max 5)
+  const starRating = Math.round(rating / 2);
   
   return (
-    <div className="bg-ticketeer-purple-dark p-6 rounded-md mb-8">
-      <h2 className="text-2xl font-bold mb-6 text-white">Ratings</h2>
-      
-      <div className="flex justify-around">
-        <div className="text-center">
-          <div className={`text-5xl font-bold ${getColor()} mb-2`}>
-            {userRating.toFixed(1)}
-          </div>
-          <span className="text-sm text-gray-400">User Score</span>
+    <div className="mb-8">
+      <h2 className="text-2xl font-bold mb-4 text-white">Ratings</h2>
+      <div className="flex items-center mb-4">
+        <div className="flex">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              fill={star <= starRating ? "gold" : "none"}
+              color={star <= starRating ? "gold" : "gray"}
+              size={24}
+            />
+          ))}
         </div>
-        
-        <div className="text-center">
-          <div className="text-5xl font-bold text-blue-500 mb-2">
-            7.9
-          </div>
-          <span className="text-sm text-gray-400">Critics Score</span>
-        </div>
-        
-        <div className="text-center">
-          <div className="text-5xl font-bold text-purple-500 mb-2">
-            8.2
-          </div>
-          <span className="text-sm text-gray-400">Ticketeer Score</span>
-        </div>
+        <span className="ml-2 text-lg text-white">{rating.toFixed(1)}/10</span>
       </div>
     </div>
   );

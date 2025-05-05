@@ -1,121 +1,200 @@
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
+import { getLocalData, setLocalData } from '../services/local-storage-service';
 import { User } from '../services/types';
-import { login as apiLogin, register as apiRegister } from '../services/api.service';
-
-interface UserProfile {
-  name: string;
-  phone?: string;
-  address?: string;
-}
 
 interface AuthContextType {
   user: User | null;
-  profile: UserProfile | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<boolean>;
+  register: (email: string, password: string, name: string) => Promise<void>;
+  updateProfile: (updates: Partial<User>) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  isAdmin: false,
+  isLoading: false,
+  login: async () => {},
+  logout: () => {},
+  register: async () => {},
+  updateProfile: async () => {}
+});
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const useAuth = () => useContext(AuthContext);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  // Check for stored user on init
+  // Check if user is already logged in
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('currentUser');
+      }
     }
     setIsLoading(false);
   }, []);
 
-  // Login function
   const login = async (email: string, password: string) => {
     try {
-      const userData = await apiLogin(email, password);
-      if (userData) {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
-
-  // Register function
-  const register = async (name: string, email: string, password: string) => {
-    try {
-      const userData = await apiRegister(name, email, password);
-      if (userData) {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Registration error:', error);
-      return false;
-    }
-  };
-
-  // Update profile function
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    try {
-      if (!user) return false;
+      setIsLoading(true);
+      const users = getLocalData<User[]>('users', []);
+      const user = users.find(u => u.email === email);
       
-      const updatedUser = {
-        ...user,
-        ...updates
+      // In a real app, we would check password hash
+      // For now, we'll just check if the user exists
+      if (!user) {
+        throw new Error('Invalid email or password');
+      }
+      
+      setUser(user);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      
+      toast({
+        title: 'Welcome back!',
+        description: `You've successfully logged in as ${user.name || user.email}`,
+      });
+      
+      navigate('/');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred during login';
+      toast({
+        title: 'Login Failed',
+        description: message,
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const register = async (email: string, password: string, name: string) => {
+    try {
+      setIsLoading(true);
+      const users = getLocalData<User[]>('users', []);
+      
+      // Check if user already exists
+      if (users.some(u => u.email === email)) {
+        throw new Error('User with this email already exists');
+      }
+      
+      // Create new user
+      const newUser: User = {
+        id: `user_${Date.now()}`,
+        email,
+        name,
+        isAdmin: false,
       };
       
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      return true;
+      // Store user in localStorage
+      users.push(newUser);
+      setLocalData('users', users);
+      
+      // Log in the new user
+      setUser(newUser);
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      
+      toast({
+        title: 'Registration Successful',
+        description: 'Welcome to Ticketeer! Your account has been created.',
+      });
+      
+      navigate('/');
     } catch (error) {
-      console.error('Profile update error:', error);
-      return false;
+      const message = error instanceof Error ? error.message : 'An error occurred during registration';
+      toast({
+        title: 'Registration Failed',
+        description: message,
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const updateProfile = async (updates: Partial<User>) => {
+    try {
+      if (!user) {
+        throw new Error('You must be logged in to update your profile');
+      }
+      
+      setIsLoading(true);
+      
+      // Update user in localStorage
+      const users = getLocalData<User[]>('users', []);
+      const userIndex = users.findIndex(u => u.id === user.id);
+      
+      if (userIndex >= 0) {
+        const updatedUser = {
+          ...users[userIndex],
+          ...updates
+        };
+        
+        users[userIndex] = updatedUser;
+        setLocalData('users', users);
+        
+        // Update current user
+        setUser(updatedUser);
+        localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+        
+        toast({
+          title: 'Profile Updated',
+          description: 'Your profile has been successfully updated.',
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'An error occurred updating your profile';
+      toast({
+        title: 'Update Failed',
+        description: message,
+        variant: 'destructive',
+      });
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Logout function
   const logout = () => {
+    localStorage.removeItem('currentUser');
     setUser(null);
-    localStorage.removeItem('user');
+    toast({
+      title: 'Logged Out',
+      description: 'You have been successfully logged out.',
+    });
+    navigate('/');
   };
 
   const value = {
     user,
-    profile: user ? { 
-      name: user.name,
-      phone: user.phone,
-      address: user.address
-    } : null,
     isAuthenticated: !!user,
-    isAdmin: user?.isAdmin || false,
+    isAdmin: !!user?.isAdmin,
     isLoading,
     login,
-    register,
     logout,
+    register,
     updateProfile
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return (
+    <AuthContext.Provider value={value}>
+      {!isLoading && children}
+    </AuthContext.Provider>
+  );
 };

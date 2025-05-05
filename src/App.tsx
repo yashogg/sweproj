@@ -5,7 +5,7 @@ import { TooltipProvider } from "./components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { initializeLocalData } from "./services/api.service";
+import { initializeApp } from "./services/api.service";
 import { useAuth } from "./context/AuthContext";
 
 // Pages
@@ -17,7 +17,7 @@ import Register from "./pages/Register";
 import UserProfile from "./pages/UserProfile";
 import Checkout from "./pages/Checkout";
 import OrderHistory from "./pages/OrderHistory";
-import AdminDashboard from "./pages/admin/Dashboard";
+import TicketConfirmation from "./pages/TicketConfirmation";
 import NotFound from "./pages/NotFound";
 
 // Auth provider
@@ -58,10 +58,10 @@ const ProtectedRoute = ({ element, requireAuth = false, requireAdmin = false }: 
 };
 
 // Data migration component
-const DataMigration = ({ children }: { children: React.ReactNode }) => {
+const DataInitializer = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Initialize local data on app startup
-    initializeLocalData();
+    initializeApp();
   }, []);
   
   return <>{children}</>;
@@ -71,16 +71,18 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <DataMigration>
+    <BrowserRouter>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <DataInitializer>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<Home />} />
               <Route path="/movies" element={<Movies />} />
+              <Route path="/movies/now-playing" element={<Movies />} />
+              <Route path="/movies/upcoming" element={<Movies />} />
               <Route path="/movies/:id" element={<MovieDetail />} />
               <Route path="/login" element={<ProtectedRoute element={<Login />} />} />
               <Route path="/register" element={<ProtectedRoute element={<Register />} />} />
@@ -89,17 +91,15 @@ const App = () => (
               <Route path="/profile" element={<ProtectedRoute element={<UserProfile />} requireAuth={true} />} />
               <Route path="/orders" element={<ProtectedRoute element={<OrderHistory />} requireAuth={true} />} />
               <Route path="/checkout" element={<ProtectedRoute element={<Checkout />} requireAuth={true} />} />
-              
-              {/* Admin Routes */}
-              <Route path="/admin/*" element={<ProtectedRoute element={<AdminDashboard />} requireAdmin={true} />} />
+              <Route path="/ticket/:id" element={<ProtectedRoute element={<TicketConfirmation />} requireAuth={true} />} />
               
               {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </DataMigration>
-        </BrowserRouter>
-      </TooltipProvider>
-    </AuthProvider>
+          </DataInitializer>
+        </TooltipProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </QueryClientProvider>
 );
 

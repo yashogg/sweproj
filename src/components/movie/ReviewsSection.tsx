@@ -1,111 +1,131 @@
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { Star } from 'lucide-react';
 import { ReviewItem } from '@/services/types';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/context/AuthContext';
 
 interface ReviewsSectionProps {
-  initialReviews: ReviewItem[];
+  reviews: ReviewItem[];
   movieId: string;
+  onAddReview?: (rating: number, comment: string) => void;
 }
 
-const ReviewsSection = ({ initialReviews, movieId }: ReviewsSectionProps) => {
-  const [reviews, setReviews] = useState<ReviewItem[]>(initialReviews);
-  const [showAddReview, setShowAddReview] = useState(false);
+const ReviewsSection = ({ reviews, movieId, onAddReview }: ReviewsSectionProps) => {
+  const { isAuthenticated } = useAuth();
+  const [userRating, setUserRating] = useState(0);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [userComment, setUserComment] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const handleAddReview = (rating: number, comment: string) => {
-    const newReview: ReviewItem = {
-      id: `review_${Date.now()}`,
-      user: 'You', // Assume the current user
-      rating,
-      comment,
-      date: new Date().toISOString()
-    };
+  const handleRatingClick = (rating: number) => {
+    setUserRating(rating);
+  };
+  
+  const handleRatingHover = (rating: number) => {
+    setHoverRating(rating);
+  };
+  
+  const handleSubmit = async () => {
+    if (!userRating || !userComment.trim()) {
+      return;
+    }
     
-    setReviews([newReview, ...reviews]);
-    setShowAddReview(false);
+    setIsSubmitting(true);
+    
+    try {
+      if (onAddReview) {
+        onAddReview(userRating, userComment);
+      }
+      
+      // Reset form
+      setUserRating(0);
+      setUserComment('');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
-    <div className="bg-ticketeer-purple-dark p-6 rounded-md mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-white">Reviews</h2>
-        
-        {!showAddReview && (
-          <Button 
-            onClick={() => setShowAddReview(true)}
-            variant="outline"
-          >
-            Write a Review
-          </Button>
-        )}
-      </div>
+    <div className="mb-8">
+      <h2 className="text-2xl font-bold mb-6 text-white">Reviews</h2>
       
-      {showAddReview && (
-        <div className="mb-6 p-4 bg-ticketeer-purple rounded-md">
-          <h3 className="font-bold text-white mb-4">Your Review</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-gray-300 mb-2">Rating (1-10)</label>
-              <select className="bg-ticketeer-purple-darker p-2 rounded w-32 text-white">
-                {[...Array(10)].map((_, i) => (
-                  <option key={i+1} value={i+1}>
-                    {i+1} {i === 0 ? 'star' : 'stars'}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-gray-300 mb-2">Your Comments</label>
-              <textarea 
-                className="w-full bg-ticketeer-purple-darker p-3 rounded text-white"
-                rows={4}
-                placeholder="Share your thoughts about this movie..."
-              ></textarea>
-            </div>
-            
-            <div className="flex gap-2">
-              <Button className="bg-ticketeer-yellow text-black hover:bg-yellow-400">
-                Submit Review
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={() => setShowAddReview(false)}
-              >
-                Cancel
-              </Button>
+      {/* Review form for authenticated users */}
+      {isAuthenticated && (
+        <div className="mb-8 bg-ticketeer-purple-dark p-6 rounded-md">
+          <h3 className="text-lg font-medium mb-4 text-white">Leave a Review</h3>
+          <div className="mb-4">
+            <p className="text-sm mb-2 text-gray-300">Your Rating</p>
+            <div className="flex">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className="cursor-pointer mr-1"
+                  fill={(star <= (hoverRating || userRating)) ? "gold" : "none"}
+                  color={(star <= (hoverRating || userRating)) ? "gold" : "gray"}
+                  size={24}
+                  onClick={() => handleRatingClick(star)}
+                  onMouseEnter={() => handleRatingHover(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                />
+              ))}
             </div>
           </div>
+          <div className="mb-4">
+            <p className="text-sm mb-2 text-gray-300">Your Comment</p>
+            <Textarea
+              value={userComment}
+              onChange={(e) => setUserComment(e.target.value)}
+              placeholder="Share your thoughts about this movie..."
+              className="bg-ticketeer-purple-darker text-white border-ticketeer-purple"
+              rows={4}
+            />
+          </div>
+          <Button 
+            onClick={handleSubmit}
+            disabled={isSubmitting || !userRating || !userComment.trim()}
+          >
+            {isSubmitting ? 'Submitting...' : 'Submit Review'}
+          </Button>
         </div>
       )}
       
-      {/* Reviews List */}
-      <div className="space-y-6">
-        {reviews.length > 0 ? (
-          reviews.map(review => (
-            <div key={review.id} className="border-b border-ticketeer-purple pb-4 mb-4 last:border-0">
+      {/* List of reviews */}
+      {reviews.length > 0 ? (
+        <div className="space-y-6">
+          {reviews.map((review) => (
+            <div key={review.id} className="bg-ticketeer-purple-dark p-4 rounded-md">
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <span className="font-medium text-white">{review.user}</span>
-                  <span className="ml-4 text-sm text-gray-400">
-                    {new Date(review.date).toLocaleDateString()}
-                  </span>
+                  <p className="font-medium text-white">{review.user}</p>
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        fill={star <= Math.round(review.rating / 2) ? "gold" : "none"}
+                        color={star <= Math.round(review.rating / 2) ? "gold" : "gray"}
+                        size={16}
+                      />
+                    ))}
+                    <span className="ml-2 text-sm text-gray-300">{review.rating}/10</span>
+                  </div>
                 </div>
-                <span className={`px-2 py-1 rounded text-xs font-bold
-                  ${review.rating >= 8 ? 'bg-green-900 text-green-300' :
-                    review.rating >= 6 ? 'bg-yellow-900 text-yellow-300' :
-                    'bg-red-900 text-red-300'}`
-                }>
-                  {review.rating}/10
-                </span>
+                <div className="text-sm text-gray-400">
+                  {new Date(review.date).toLocaleDateString()}
+                </div>
               </div>
-              <p className="text-gray-300">{review.comment}</p>
+              <p className="text-gray-200">{review.comment}</p>
             </div>
-          ))
-        ) : (
-          <p className="text-gray-400 text-center italic">No reviews yet. Be the first to review!</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-8 bg-ticketeer-purple-dark rounded-md">
+          <p className="text-gray-300">No reviews yet. Be the first to leave a review!</p>
+        </div>
+      )}
     </div>
   );
 };

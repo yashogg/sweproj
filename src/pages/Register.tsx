@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -45,7 +46,6 @@ const Register = () => {
     if (
       !formData.name || 
       !formData.email || 
-      !formData.phone || 
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -69,17 +69,12 @@ const Register = () => {
     try {
       setIsLoading(true);
       
-      // Updated to pass only the expected parameters
+      // Pass only the expected parameters
       await register(
         formData.email, 
         formData.password,
         formData.name
       );
-      
-      toast({
-        title: "Registration successful!",
-        description: "Your account has been created.",
-      });
       
       // Redirect to login
       navigate('/login');
@@ -142,13 +137,12 @@ const Register = () => {
               
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-200 mb-1">
-                  Phone Number <span className="text-red-500">*</span>
+                  Phone Number
                 </label>
                 <Input
                   id="phone"
                   name="phone"
                   type="tel"
-                  required
                   value={formData.phone}
                   onChange={handleChange}
                   placeholder="(123) 456-7890"

@@ -1,15 +1,16 @@
 
-import StatusBadge from "./StatusBadge";
-import Synopsis from "./Synopsis";
-import CastSection from "./CastSection";
-import RatingsSection from "./RatingsSection";
-import ReviewsSection from "./ReviewsSection";
-import type { ReviewItem } from "@/services/types"; // Type-only import
+import React from 'react';
+import StatusBadge from './StatusBadge';
+import Synopsis from './Synopsis';
+import CastSection from './CastSection';
+import RatingsSection from './RatingsSection';
+import ReviewsSection from './ReviewsSection';
+import { ReviewItem } from '@/services/types';
 
 interface CastMember {
   name: string;
-  character: string;
-  photo: string;
+  character?: string;
+  photo?: string;
 }
 
 interface MovieDetailsProps {
@@ -27,24 +28,24 @@ const MovieDetails = ({
   rating,
   status,
   reviews,
-  movieId
+  movieId,
 }: MovieDetailsProps) => {
   return (
-    <div className="md:w-2/3">
-      {/* Status Badge */}
-      <StatusBadge status={status} />
+    <div className="w-full md:w-2/3">
+      <div className="mb-4">
+        <StatusBadge status={status} />
+      </div>
       
-      {/* Synopsis */}
       <Synopsis description={description} />
       
-      {/* Cast Section */}
       <CastSection cast={cast} />
       
-      {/* Ratings */}
-      <RatingsSection userRating={rating} />
+      <RatingsSection rating={rating} />
       
-      {/* Reviews Section */}
-      <ReviewsSection initialReviews={reviews} movieId={movieId} />
+      <ReviewsSection 
+        reviews={reviews} 
+        movieId={movieId}
+      />
     </div>
   );
 };

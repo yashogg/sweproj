@@ -5,29 +5,58 @@ import { getShowtimeById } from './showtime-service';
 
 export async function getUserOrders(userId: string): Promise<OrderWithDetails[]> {
   try {
-    const orders = getLocalData<OrderWithDetails[]>('orders', []);
+    const orders = getLocalData<Order[]>('orders', []);
     
     // Filter orders by user ID
     const userOrders = orders.filter(order => order.userId === userId);
     
     // Sort by order date, newest first
-    userOrders.sort((a, b) => {
-      const dateA = a.orderDate ? new Date(a.orderDate).getTime() : 0;
-      const dateB = b.orderDate ? new Date(b.orderDate).getTime() : 0;
-      return dateB - dateA;
+    const sortedOrders = [...userOrders].sort((a, b) => {
+      if (a.orderDate && b.orderDate) {
+        return new Date(b.orderDate).getTime() - new Date(a.orderDate).getTime();
+      }
+      return 0;
     });
     
-    return userOrders;
+    // Enhance with showtime details
+    const ordersWithDetails: OrderWithDetails[] = await Promise.all(
+      sortedOrders.map(async (order) => {
+        if (order.showtimeId) {
+          const showtime = await getShowtimeById(order.showtimeId);
+          return {
+            ...order,
+            showtimeDetails: showtime || undefined
+          };
+        }
+        return order;
+      })
+    );
+    
+    return ordersWithDetails;
   } catch (error) {
     console.error('Error fetching user orders:', error);
-    throw error;
+    return [];
   }
 }
 
 export async function getOrderById(id: string): Promise<OrderWithDetails | null> {
   try {
-    const orders = getLocalData<OrderWithDetails[]>('orders', []);
-    const order = orders.find(o => o.id === id) || null;
+    const orders = getLocalData<Order[]>('orders', []);
+    const order = orders.find(o => o.id === id);
+    
+    if (!order) {
+      return null;
+    }
+    
+    // Get showtime details
+    if (order.showtimeId) {
+      const showtime = await getShowtimeById(order.showtimeId);
+      return {
+        ...order,
+        showtimeDetails: showtime || undefined
+      };
+    }
+    
     return order;
   } catch (error) {
     console.error('Error fetching order:', error);
@@ -35,79 +64,60 @@ export async function getOrderById(id: string): Promise<OrderWithDetails | null>
   }
 }
 
-export async function createOrder(order: Omit<Order, 'id' | 'orderDate'>): Promise<Order> {
+export async function createOrder(orderData: {
+  userId: string;
+  movieId: string;
+  movieTitle: string;
+  showtimeId: string;
+  seats: number;
+  theater: string;
+  date: string;
+  totalPrice: number;
+}): Promise<OrderWithDetails> {
   try {
-    const orders = getLocalData<OrderWithDetails[]>('orders', []);
+    const orders = getLocalData<Order[]>('orders', []);
     
-    // Get the showtime details
-    const showtime = await getShowtimeById(order.showtimeId);
-    if (!showtime) {
-      throw new Error(`Showtime with ID ${order.showtimeId} not found`);
-    }
-    
-    // Generate a new ID
-    const newId = generateId();
-    
-    // Create the new order
+    // Create new order
     const newOrder: Order = {
-      ...order,
-      id: newId,
+      id: generateId(),
+      userId: orderData.userId,
+      movieId: orderData.movieId,
+      movieTitle: orderData.movieTitle,
+      showtimeId: orderData.showtimeId,
+      seats: orderData.seats,
+      theater: orderData.theater,
+      date: orderData.date,
+      totalPrice: orderData.totalPrice,
       orderDate: new Date().toISOString(),
+      paymentStatus: 'Completed'
     };
     
-    // Create the detailed version with showtime info
-    const newOrderWithDetails: OrderWithDetails = {
-      ...newOrder,
-      showtimeDetails: showtime
-    };
-    
-    // Add to orders
-    orders.push(newOrderWithDetails);
+    // Add to localStorage
+    orders.push(newOrder);
     setLocalData('orders', orders);
     
-    // Update available seats in the showtime
-    if (typeof showtime.availableSeats === 'number') {
-      const updatedSeats = showtime.availableSeats - order.seats;
-      if (updatedSeats >= 0) {
-        showtime.availableSeats = updatedSeats;
-        const showtimes = getLocalData<ShowtimeWithDetails[]>('showtimes', []);
-        const showtimeIndex = showtimes.findIndex(s => s.id === showtime.id);
-        if (showtimeIndex !== -1) {
-          showtimes[showtimeIndex] = showtime;
-          setLocalData('showtimes', showtimes);
-        }
+    // Update showtime available seats
+    const showtimes = getLocalData('showtimes', []);
+    const showtimeIndex = showtimes.findIndex(s => s.id === orderData.showtimeId);
+    
+    if (showtimeIndex !== -1) {
+      const showtime = showtimes[showtimeIndex];
+      if (typeof showtime.availableSeats === 'number') {
+        showtime.availableSeats -= orderData.seats;
+        showtimes[showtimeIndex] = showtime;
+        setLocalData('showtimes', showtimes);
       }
     }
     
-    return newOrder;
+    // Get showtime details for the response
+    const showtimeDetails = await getShowtimeById(orderData.showtimeId);
+    
+    return {
+      ...newOrder,
+      showtimeDetails: showtimeDetails || undefined
+    };
   } catch (error) {
     console.error('Error creating order:', error);
-    throw error;
-  }
-}
-
-export async function updateOrder(id: string, updates: Partial<Order>): Promise<Order> {
-  try {
-    const orders = getLocalData<OrderWithDetails[]>('orders', []);
-    
-    // Find the order to update
-    const index = orders.findIndex(o => o.id === id);
-    if (index === -1) {
-      throw new Error(`Order with ID ${id} not found`);
-    }
-    
-    // Update the order
-    const updatedOrder = {
-      ...orders[index],
-      ...updates
-    };
-    
-    orders[index] = updatedOrder;
-    setLocalData('orders', orders);
-    
-    return updatedOrder;
-  } catch (error) {
-    console.error('Error updating order:', error);
-    throw error;
+    throw new Error('Failed to create order');
   }
 }

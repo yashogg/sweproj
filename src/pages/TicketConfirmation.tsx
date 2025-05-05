@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { getOrderById } from '@/services/order-service';
 import { getShowtimeById } from '@/services/showtime-service';
-import { Order, OrderWithDetails } from '@/services/types';
+import { OrderWithDetails } from '@/services/types';
 
 const TicketConfirmation = () => {
   const { id } = useParams<{ id: string }>();
@@ -22,7 +22,7 @@ const TicketConfirmation = () => {
         const orderData = await getOrderById(id);
         if (orderData) {
           // Fetch the showtime details if needed
-          if (orderData.showtimeId) {
+          if (orderData.showtimeId && !orderData.showtimeDetails) {
             const showtimeData = await getShowtimeById(orderData.showtimeId);
             if (showtimeData) {
               setOrder({
