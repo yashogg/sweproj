@@ -1,180 +1,78 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import Layout from '@/components/layout/Layout';
-import { useAuth } from '@/context/AuthContext';
 import { getUserOrders } from '@/services/order-service';
-import { OrderWithDetails } from '@/services/supabase-types';
-import { Calendar, Clock, MapPin, Eye, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
+import { OrderWithDetails } from '@/services/types';
+import { useAuth } from '@/context/AuthContext';
 
 const OrderHistory = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [orders, setOrders] = useState<OrderWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) {
-        navigate('/login');
-        return;
-      }
-
-      try {
-        const userOrders = await getUserOrders(user.id);
-        setOrders(userOrders);
-      } catch (error) {
-        console.error('Error fetching orders:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load your ticket history",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
+      if (user) {
+        try {
+          const userOrders = await getUserOrders(user.id);
+          setOrders(userOrders);
+        } catch (error) {
+          console.error('Error fetching orders:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [user, navigate, toast]);
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatShortDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  }, [user]);
 
   return (
-    <Layout title="Order History" requireAuth={true}>
+    <Layout title="Order History" requireAuth>
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Your Ticket Orders</h1>
-          
-          {isLoading ? (
-            <p className="text-center py-10">Loading your orders...</p>
-          ) : orders.length === 0 ? (
-            <div className="bg-white p-8 rounded-lg shadow text-center">
-              <h2 className="text-xl font-bold mb-4">No Tickets Found</h2>
-              <p className="text-gray-600 mb-6">
-                You haven't purchased any tickets yet. Explore our movies and book your first ticket!
-              </p>
-              <Button 
-                onClick={() => navigate('/movies/now-playing')}
-                className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark"
-              >
-                Browse Movies
-              </Button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {orders
-                .sort((a, b) => new Date(b.order_date).getTime() - new Date(a.order_date).getTime())
-                .map((order) => {
-                  const movieTitle = order.showtime?.movie?.title || "Unknown Movie";
-                  const theaterName = order.showtime?.theater?.name || "Unknown Theater";
-                  const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
-                  const showDate = order.showtime?.date || new Date().toISOString().split('T')[0];
-                  const showTime = order.showtime?.time || "00:00";
-                  
-                  // Generate placeholder seats (in a real app, these would be stored in the database)
-                  const seatsList = [...Array(order.seats)].map((_, i) => 
-                    String.fromCharCode(65 + Math.floor(i/10)) + (i%10 + 1)
-                  );
-                  
-                  return (
-                    <div key={order.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-                      <div className="bg-ticketeer-purple-dark p-4 flex justify-between items-center">
-                        <div className="text-white">
-                          <span className="font-medium">Order ID: {order.id.substring(0, 8)}</span>
-                          <p className="text-sm opacity-80">Purchased on {formatDate(order.order_date)}</p>
-                        </div>
-                        <Link to={`/ticket/${order.id}`}>
-                          <Button 
-                            variant="secondary" 
-                            size="sm"
-                            className="flex items-center"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            View Ticket
-                          </Button>
-                        </Link>
-                      </div>
-                      
-                      <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4">
-                        <div className="w-full md:w-1/4 flex-shrink-0">
-                          <div className="bg-gray-200 rounded-md h-24 md:h-32 flex items-center justify-center text-center p-2">
-                            <div>
-                              <p className="font-bold text-xl">{formatShortDate(showDate)}</p>
-                              <p className="text-sm">{showTime}</p>
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex-grow">
-                          <h2 className="text-xl font-bold mb-2">{movieTitle}</h2>
-                          
-                          <div className="flex flex-col md:flex-row md:justify-between space-y-2 md:space-y-0">
-                            <div className="space-y-1">
-                              <div className="flex items-center text-sm">
-                                <MapPin className="w-4 h-4 mr-1 text-gray-500" />
-                                <span>{theaterName}, {screenName}</span>
-                              </div>
-                              
-                              <div className="flex items-center text-sm">
-                                <Calendar className="w-4 h-4 mr-1 text-gray-500" />
-                                <span>{formatDate(showDate)}</span>
-                              </div>
-                              
-                              <div className="flex items-center text-sm">
-                                <Clock className="w-4 h-4 mr-1 text-gray-500" />
-                                <span>{showTime}</span>
-                              </div>
-                            </div>
-                            
-                            <div>
-                              <div className="text-sm mb-1">
-                                <span className="text-gray-500">Seats:</span> <span className="font-medium">{seatsList.join(', ')}</span>
-                              </div>
-                              <div className="font-bold text-lg">
-                                ${order.total_amount}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-            </div>
-          )}
-          
-          <Separator className="my-8" />
-          
-          <div className="flex justify-between items-center">
-            <Button variant="outline" onClick={() => navigate('/profile')}>Back to Profile</Button>
-            <Link to="/movies/now-playing">
-              <Button className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
-                Browse Movies
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+        <h1 className="text-3xl font-bold mb-6">Your Order History</h1>
+        
+        {loading ? (
+          <div className="flex justify-center my-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
           </div>
-        </div>
+        ) : orders.length === 0 ? (
+          <div className="text-center my-12 p-8 bg-gray-100 rounded-lg">
+            <h2 className="text-xl font-semibold mb-2">No Orders Found</h2>
+            <p className="text-gray-600">You haven't made any purchases yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {orders.map(order => (
+              <div key={order.id} className="border rounded-lg p-4 bg-white shadow-sm">
+                <div className="flex flex-wrap justify-between items-start">
+                  <div>
+                    <h2 className="text-xl font-semibold">{order.showtime?.movie?.title || 'Unknown Movie'}</h2>
+                    <p className="text-gray-600">{new Date(order.order_date).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">Total: ${order.total_amount.toFixed(2)}</p>
+                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                      order.payment_status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                      order.payment_status === 'Failed' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {order.payment_status}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="mt-4 border-t pt-4">
+                  <p><span className="font-medium">Tickets:</span> {order.seats}</p>
+                  <p><span className="font-medium">Theater:</span> {order.showtime?.theater?.name || 'Unknown'}</p>
+                  <p><span className="font-medium">Showtime:</span> {order.showtime ? `${order.showtime.date} at ${order.showtime.time}` : 'Unknown'}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Layout>
   );

@@ -1,300 +1,136 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Calendar, Clock, MapPin, Download, Share2, ArrowLeft, ArrowRight } from 'lucide-react';
-import { getOrderById } from '@/services/order-service';
-import { OrderWithDetails } from '@/services/supabase-types';
-import { useToast } from '@/hooks/use-toast';
 
-interface TicketDetails {
-  id: string;
-  movieTitle: string;
-  theater: string;
-  screen: string;
-  date: string;
-  time: string;
-  seats: string[];
-  amount: string;
-  barcode: string;
-  purchaseDate: string;
-  poster?: string;
-}
+import { useEffect, useState } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import Layout from '@/components/layout/Layout';
+import { getOrderById } from '@/services/order-service';
+import { getShowtimeById } from '@/services/showtime-service';
+import { OrderWithDetails } from '@/services/types';
 
 const TicketConfirmation = () => {
-  const { id } = useParams<{id: string}>();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [ticket, setTicket] = useState<TicketDetails | null>(null);
+  const { id } = useParams<{ id: string }>();
+  const [order, setOrder] = useState<OrderWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     const fetchOrderDetails = async () => {
       if (!id) {
-        toast({
-          title: "Error",
-          description: "Invalid ticket ID",
-          variant: "destructive"
-        });
-        navigate('/orders');
+        setLoading(false);
         return;
       }
 
-      // First try to get from session storage (for newly purchased tickets)
-      const ticketDetailsStr = sessionStorage.getItem('ticketDetails');
-      if (ticketDetailsStr) {
-        try {
-          const details = JSON.parse(ticketDetailsStr);
-          if (details.id === id) {
-            setTicket(details);
-            setLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.error("Error parsing ticket details:", error);
-        }
-      }
-
-      // If not in session storage, fetch from database
       try {
-        const order = await getOrderById(id);
-        if (!order) {
-          toast({
-            title: "Not Found",
-            description: "Ticket not found",
-            variant: "destructive"
-          });
-          navigate('/orders');
-          return;
+        const orderData = await getOrderById(id);
+        if (orderData) {
+          // Fetch the showtime details including movie and theater
+          if (orderData.showtime_id) {
+            const showtimeData = await getShowtimeById(orderData.showtime_id);
+            if (showtimeData) {
+              setOrder({
+                ...orderData,
+                showtime: showtimeData
+              });
+            } else {
+              setOrder(orderData);
+            }
+          } else {
+            setOrder(orderData);
+          }
         }
-
-        // Transform order into ticket details
-        const movieTitle = order.showtime?.movie?.title || "Unknown Movie";
-        const theaterName = order.showtime?.theater?.name || "Unknown Theater";
-        const screenName = `Screen ${Math.floor(Math.random() * 10) + 1}`;
-        const showDate = order.showtime?.date || new Date().toISOString().split('T')[0];
-        const showTime = order.showtime?.time || "00:00";
-        
-        // Generate placeholder seats (in a real app, these would be stored in the database)
-        const seatsList = [...Array(order.seats)].map((_, i) => 
-          String.fromCharCode(65 + Math.floor(i/10)) + (i%10 + 1)
-        );
-
-        const ticketData: TicketDetails = {
-          id: order.id,
-          movieTitle: movieTitle,
-          theater: theaterName,
-          screen: screenName,
-          date: showDate,
-          time: showTime,
-          seats: seatsList,
-          amount: order.total_amount.toString(),
-          barcode: 'T' + order.id.substring(0, 6) + 'R' + Math.floor(1000 + Math.random() * 9000),
-          purchaseDate: order.order_date,
-          poster: order.showtime?.movie?.image_path
-        };
-
-        setTicket(ticketData);
       } catch (error) {
-        console.error("Error fetching order details:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load ticket details",
-          variant: "destructive"
-        });
+        console.error('Error fetching order details:', error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrderDetails();
-  }, [id, navigate, toast]);
-  
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'long', 
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  // Function to print the ticket
-  const handlePrint = () => {
-    window.print();
-  };
+  }, [id]);
 
   if (loading) {
     return (
-      <Layout title="Loading Ticket" requireAuth={true}>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ticketeer-purple mx-auto"></div>
-            <p className="mt-4 text-white">Loading ticket details...</p>
-          </div>
+      <Layout title="Loading...">
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
         </div>
       </Layout>
     );
   }
 
-  if (!ticket) {
+  if (!order) {
     return (
-      <Layout title="Ticket Not Found" requireAuth={true}>
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Ticket Not Found</h2>
-            <p className="text-gray-300 mb-6">
-              The ticket you're looking for could not be found. It may have been deleted or you may have entered an incorrect URL.
-            </p>
-            <Button onClick={() => navigate('/orders')} className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
-              View All Tickets
-            </Button>
-          </div>
+      <Layout title="Ticket Not Found">
+        <div className="container mx-auto px-4 py-12 text-center">
+          <h1 className="text-3xl font-bold mb-4">Ticket Not Found</h1>
+          <p className="mb-6">Sorry, we couldn't find the ticket you're looking for.</p>
+          <Link to="/" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            Back to Home
+          </Link>
         </div>
       </Layout>
     );
   }
 
   return (
-    <Layout title="Ticket Confirmation" requireAuth={true}>
+    <Layout title="Ticket Confirmation">
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto">
-          {/* Success Message */}
-          <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 text-center">
-            <h1 className="text-2xl font-bold text-green-700 mb-2">Ticket Purchased Successfully!</h1>
-            <p className="text-green-600">
-              Your ticket has been booked and is ready to use.
-            </p>
+        <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-purple-600 text-white py-4 px-6">
+            <h1 className="text-2xl font-bold">Ticket Confirmation</h1>
+            <p>Order #{order.id.substring(0, 8)}</p>
           </div>
           
-          {/* E-Ticket */}
-          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className="p-6 bg-ticketeer-purple text-white">
-              <h2 className="text-xl font-bold">Your E-Ticket</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-              {/* Left Column - Movie Info */}
-              <div className="md:col-span-1">
-                <img 
-                  src={ticket.poster || "https://via.placeholder.com/300x450/2D1B4E/FFFFFF?text=" + encodeURIComponent(ticket.movieTitle)} 
-                  alt={ticket.movieTitle} 
-                  className="w-full rounded-md shadow"
-                />
-                <h3 className="font-bold text-lg mt-4 text-gray-800">{ticket.movieTitle}</h3>
-                <div className="flex items-center text-sm text-gray-600 mt-2">
-                  <Calendar className="w-4 h-4 mr-1" />
-                  {formatDate(ticket.date)}
-                </div>
-                <div className="flex items-center text-sm text-gray-600 mt-1">
-                  <Clock className="w-4 h-4 mr-1" />
-                  {ticket.time}
-                </div>
-                <div className="flex items-center text-sm text-gray-600 mt-1">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  {ticket.theater}, {ticket.screen}
-                </div>
-              </div>
+          <div className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-4">
+                {order.showtime?.movie?.title || 'Movie Title'}
+              </h2>
               
-              {/* Right Column - Ticket Details */}
-              <div className="md:col-span-2">
-                <div className="border rounded-lg p-6">
-                  <div className="flex justify-between mb-4">
-                    <div>
-                      <h4 className="font-semibold text-gray-800">Seats</h4>
-                      <p className="text-2xl font-bold mt-1 text-gray-800">{ticket.seats.join(', ')}</p>
-                    </div>
-                    <div className="text-right">
-                      <h4 className="font-semibold text-gray-800">Total Amount</h4>
-                      <p className="text-2xl font-bold mt-1 text-gray-800">${ticket.amount}</p>
-                    </div>
-                  </div>
-                  
-                  <Separator className="my-4" />
-                  
-                  <div className="space-y-2 text-gray-800">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Ticket ID</span>
-                      <span className="font-medium">{ticket.id.substring(0, 8)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Purchase Date</span>
-                      <span className="font-medium">{formatDate(ticket.purchaseDate)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Number of Tickets</span>
-                      <span className="font-medium">{ticket.seats.length}</span>
-                    </div>
-                  </div>
-                  
-                  <Separator className="my-4" />
-                  
-                  {/* Barcode */}
-                  <div className="mt-6 text-center">
-                    <h4 className="font-semibold mb-4 text-gray-800">Present this barcode at the theater</h4>
-                    <div className="bg-gray-100 p-4 rounded-lg mb-3">
-                      {/* Barcode Image - In a real app, you would generate an actual barcode or QR code */}
-                      <div className="bg-white py-6 px-4">
-                        <div className="flex justify-between items-center">
-                          <div className="h-16 w-2 bg-black"></div>
-                          <div className="h-16 w-1 bg-black"></div>
-                          <div className="h-16 w-3 bg-black"></div>
-                          <div className="h-16 w-2 bg-black"></div>
-                          <div className="h-16 w-1 bg-black"></div>
-                          <div className="h-16 w-4 bg-black"></div>
-                          <div className="h-16 w-1 bg-black"></div>
-                          <div className="h-16 w-3 bg-black"></div>
-                          <div className="h-16 w-2 bg-black"></div>
-                          <div className="h-16 w-1 bg-black"></div>
-                        </div>
-                      </div>
-                      <p className="mt-2 text-sm font-mono text-gray-800">{ticket.barcode}</p>
-                    </div>
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-gray-600">Date</p>
+                  <p className="font-medium">{order.showtime?.date || 'Date'}</p>
                 </div>
-                
-                {/* Action Buttons */}
-                <div className="flex justify-between mt-6">
-                  <Button variant="outline" size="sm" onClick={handlePrint}>
-                    <Download className="w-4 h-4 mr-2" />
-                    Print Ticket
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
+                <div>
+                  <p className="text-gray-600">Time</p>
+                  <p className="font-medium">{order.showtime?.time || 'Time'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Theater</p>
+                  <p className="font-medium">{order.showtime?.theater?.name || 'Theater'}</p>
+                </div>
+                <div>
+                  <p className="text-gray-600">Seats</p>
+                  <p className="font-medium">{order.seats} tickets</p>
                 </div>
               </div>
             </div>
             
-            <div className="p-6 bg-gray-50 border-t">
-              <div className="text-sm text-gray-600">
-                <p className="font-bold mb-2">Instructions:</p>
-                <ol className="list-decimal pl-5 space-y-1">
-                  <li>Please arrive at least 15 minutes before the show time.</li>
-                  <li>Show this ticket on your device or as a printout at the entrance.</li>
-                  <li>This ticket cannot be exchanged or refunded.</li>
-                </ol>
+            <div className="border-t border-gray-200 pt-4 mb-6">
+              <h3 className="font-semibold mb-2">Payment Details</h3>
+              <div className="flex justify-between">
+                <span>Status</span>
+                <span className={`px-2 py-1 text-xs rounded-full ${
+                  order.payment_status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                  order.payment_status === 'Failed' ? 'bg-red-100 text-red-800' : 
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {order.payment_status}
+                </span>
+              </div>
+              <div className="flex justify-between mt-2">
+                <span>Total Amount</span>
+                <span className="font-semibold">${order.total_amount.toFixed(2)}</span>
               </div>
             </div>
-          </div>
-          
-          {/* Navigation Links */}
-          <div className="flex justify-between mt-8">
-            <Link to="/orders">
-              <Button variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                View All Tickets
-              </Button>
-            </Link>
-            <Link to="/">
-              <Button className="bg-ticketeer-purple hover:bg-ticketeer-purple-dark">
+            
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">
+                Please arrive 15 minutes before showtime. This ticket will be required for entry.
+              </p>
+              <Link to="/" className="inline-block px-6 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
                 Back to Home
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
